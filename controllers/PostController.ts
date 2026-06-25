@@ -10,8 +10,12 @@ export const criarPost = (req: Request, res: Response) => {
         if (!content || content.length < 10) {
             return res.status(HttpCodes.BAD_REQUEST).json({error: "São necessários posts de pelo menos 10 caracteres!"});
         }
+        const newPost = db.posts.create({
+            data: {user_id: Number(userId), title: tituloReserva, content}
+        });
+        return res.status(HttpCodes.CREATED).json({message: "Post criado com sucesso!", post: newPost})
     } catch (err: any) {
-        
+        return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({error: "Erro ao criar post!"});
     } 
 }
 
