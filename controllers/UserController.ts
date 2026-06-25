@@ -10,10 +10,10 @@ export const cadastrarUsuario = async (req: Request, res: Response) => {
         if (!nickname || !email || !password) {
             return res.status(HttpCodes.BAD_REQUEST).json({error: "Todos os campos são obrigatórios!"});
         }
-        const nickExists = await db.user.findUnique({
+        const nickExists = await db.users.findUnique({
             where:{nickname}
         });
-        const emailExists = await db.user.findUnique({
+        const emailExists = await db.users.findUnique({
             where: {email}
         });
         if (nickExists != null) {
@@ -23,10 +23,11 @@ export const cadastrarUsuario = async (req: Request, res: Response) => {
             return res.status(HttpCodes.CONFLICT).json({error: "E-mail já cadastrado no sistema!"});
         }
         const hashPassword = await bcrypt.hash(password, 10);
-        const newUser = await db.user.create({
+        const newUser = await db.users.create({
             data: {nickname, email, password: hashPassword}
         });
-        return res.status(HttpCodes.CREATED).json({message: "Usuário(a) criado(a) com sucesso!"});
+        const {password:_, ...userSemSenha} = newUser;
+        return res.status(HttpCodes.CREATED).json({message: "Usuário(a) criado(a) com sucesso!", user: userSemSenha});
     } catch (e: any) {
         console.error("Ocorreu um erro: ", e);
         return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({error: "Erro ao cadastrar usuário!"});
@@ -39,7 +40,7 @@ export const login = async (req: Request, res: Response) => {
         if (!nickname || !password) {
             return res.status(HttpCodes.BAD_REQUEST).json({error: "Todos os campos são obrigatórios!"});
         }
-        const nickExists = await db.user.findUnique({
+        const nickExists = await db.users.findUnique({
             where: {nickname}
         });
         if (!nickExists) {
