@@ -15,6 +15,6 @@
     },
     "typeRoots": ["./node_modules/@types", "./generated", "./generated/prisma"]
   },
-  "include": ["src/**/*", "generated/**/*"],
+  "include": ["./**/*", "./types", "generated/**/*"],
   "exclude": ["node_modules", "dist"]
 }

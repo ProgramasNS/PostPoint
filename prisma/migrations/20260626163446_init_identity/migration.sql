@@ -1,26 +1,28 @@
 -- CreateTable
 CREATE TABLE "comments" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "content" VARCHAR(255),
-    "user_id" BIGINT NOT NULL,
-    "post_id" BIGINT NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "post_id" INTEGER NOT NULL,
 
     CONSTRAINT "comments_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "posts" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "content" VARCHAR(255),
     "title" VARCHAR(255),
-    "user_id" BIGINT NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "posts_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "users" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "email" VARCHAR(255) NOT NULL,
     "nickname" VARCHAR(255) NOT NULL,
     "password" VARCHAR(255) NOT NULL,

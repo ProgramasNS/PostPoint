@@ -1,5 +1,5 @@
 import {NextFunction, Request, Response} from 'express'
-import jwt, { decode } from 'jsonwebtoken'
+import jwt, { decode, JwtPayload } from 'jsonwebtoken'
 import HttpCodes from '../objects/Http';
 const verificarToken = async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
@@ -8,8 +8,8 @@ const verificarToken = async (req: Request, res: Response, next: NextFunction) =
         return res.status(HttpCodes.UNAUTHORIZED).json({error: "Token não fornecido!"});
     }
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-        (req as any).user = decoded;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload & {id: number};
+        req.userId = decoded.id;
         next();
     } catch (err: any) {
         console.error("Erro: ", err);
