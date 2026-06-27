@@ -33,6 +33,7 @@ model users {
   email    String     @unique@db.VarChar(255)
   nickname String     @unique@db.VarChar(255)
   password String     @db.VarChar(255)
+  profilePic String?
   comments comments[]
   posts    posts[]
 }
