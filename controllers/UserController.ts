@@ -59,3 +59,21 @@ export const login = async (req: Request, res: Response) => {
     }
 }
 
+export const atualizarFoto = async (req: Request, res: Response) => {
+    try {
+        const userId = req.userId;
+        const {url} = req.body;
+        if (!url) {
+            return res.status(HttpCodes.BAD_REQUEST).json("É obrigatório adicionar o endereço da imagem!");
+        }
+        const reqImagem = await db.users.update({where: {id: userId}, data: {
+                profilePic: url
+            }});
+        return res.status(HttpCodes.OK).json({
+            message: "Foto de perfil adicionada/atualizada", reqImagem
+        });
+    } catch (err: any){
+        console.error("Erro: ", err);
+        return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({error: "Erro ao modificar foto!"})
+    }
+}
