@@ -7,11 +7,9 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "moduleResolution": "node",
-    "baseUrl": ".",                          
+    "strict": true,                         
     "paths": {                              
-      "@generated/*": ["generated/*"],
+      "@generated/*": ["./generated/*"],
     },
     "typeRoots": ["./node_modules/@types", "./generated", "./generated/prisma"]
   },
