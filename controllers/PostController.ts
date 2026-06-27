@@ -97,6 +97,9 @@ export const excluirPost = async (req: Request, res: Response) => {
         const postExcluido = await db.posts.findUnique({
             where: {id: Number(postId)}
         });
+        if (!postExcluido) {
+            return res.status(HttpCodes.NOT_FOUND).json({error: "Post não encontrado!"});
+        }
         if (userId !== postExcluido?.user_id) {
             return res.status(HttpCodes.UNAUTHORIZED).json({error: "Somente o(a) criador(a) do post pode excluí-lo!"});
         }

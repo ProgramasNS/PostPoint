@@ -19,8 +19,8 @@ model comments {
 
 model posts {
   id       Int     @id @default(autoincrement())
-  content  String?    @db.VarChar(255)
-  title    String?    @db.VarChar(255)
+  content  String    @db.VarChar(255)
+  title    String    @db.VarChar(255)
   user_id  Int
   comments comments[] 
   users    users      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk5lidm6cqbc7u4xhqpxm898qme")
