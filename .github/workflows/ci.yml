@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: My_ENV
 
     steps:
       - name: Checkout código
