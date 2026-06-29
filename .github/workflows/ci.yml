@@ -28,7 +28,7 @@ jobs:
 
       - name: Rodar migrations Prisma
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ vars.DATABASE_URL }}
         run: npx prisma migrate deploy
 
       - name: Build do projeto
