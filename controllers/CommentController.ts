@@ -115,6 +115,8 @@ export const excluirComentario = async (req: Request, res: Response) => {
         if (userId !== comentarioExiste.user_id) {
             return res.status(HttpCodes.NOT_FOUND).json({error: "Somente o(a) criador(a) pode excluir os comentários!"})
         }
+        await db.comments.delete({
+        where: {id: Number(commentId)}});
     } catch (err: any) {
         return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({error: "Erro ao excluir post!"});
     }
