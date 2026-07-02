@@ -6,7 +6,7 @@ const commentRoute = Router();
 commentRoute.post('/:postId/new', verificarToken, criarComentario);
 commentRoute.get('/', listarComentarios);
 commentRoute.get('/:userId', listarComentariosPorUsuario);
-commentRoute.get('/:postId', listarComentariosPorPost);
+commentRoute.get('/post/:postId', listarComentariosPorPost);
 commentRoute.put('/:postId/:commentId', verificarToken, atualizarComentario);
 commentRoute.delete('/:postId/:commentId', verificarToken, excluirComentario);
 

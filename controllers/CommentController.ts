@@ -7,7 +7,7 @@ export const criarComentario = async (req: Request, res: Response) => {
         const userId = req.userId;
         const {postId} = req.params;
         const {content} = req.body;
-        const postExiste = await db.posts.findMany({
+        const postExiste = await db.posts.findUnique({
             where: {id: Number(postId)}
         });
         if (!content || content.length < 10) {
@@ -117,6 +117,7 @@ export const excluirComentario = async (req: Request, res: Response) => {
         }
         await db.comments.delete({
         where: {id: Number(commentId)}});
+        return res.status(HttpCodes.OK).json({message: "Post excluído com sucesso!"});
     } catch (err: any) {
         return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({error: "Erro ao excluir post!"});
     }
