@@ -3,7 +3,7 @@ import request from 'supertest';
 import app from "../../app";
 import HttpCodes from "../../objects/Http";
 
-//Função correspondente à função "criarPost"
+//Função correspondente a "criarPost"
 describe(
     'POST /new', () => {
         test(
@@ -20,4 +20,27 @@ describe(
     }
 );
 
-//
+//Função correspondente a "listarPosts"
+describe(
+    'GET /', () => {
+        test(
+            'Listar todos os posts', async () => {
+                const res = await request(app).get('/');
+                const posts = res.body;
+                expect(res.statusCode).toBe(HttpCodes.OK);
+                expect(Array.isArray(posts)).toBe(true);
+            }
+        )
+    }
+);
+
+//Função correspondente a listarPostsPorUsuario
+describe(
+    'GET /author/:authorId', () => {
+        test(
+            'Listar os posts de um usuário específico', async () => {
+                
+            }
+        )
+    }
+)
