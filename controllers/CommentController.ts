@@ -10,6 +10,9 @@ export const criarComentario = async (req: Request, res: Response) => {
         const postExiste = await db.posts.findUnique({
             where: {id: Number(postId)}
         });
+        if (!userId) {
+            return res.status(HttpCodes.FORBIDDEN).json({error: "Você não está autenticado(a)!"});
+        }
         if (!content || content.length < 10) {
             return res.status(HttpCodes.BAD_REQUEST).json({error: "Comentários precisam de pelo menos 10 caracteres!"});
         }
@@ -86,7 +89,7 @@ export const atualizarComentario = async (req: Request, res: Response) => {
             where: {id: Number(commentId)},
         });
         if (!comment) {
-
+            return res.status(HttpCodes.NOT_FOUND).json({error: "Comentário não encontrado!"});
         }
         if (userId !== comment?.user_id) {
             return res.status(HttpCodes.UNAUTHORIZED).json({error: "Somente o(a) criador(a) do comentário pode editá-lo!"});

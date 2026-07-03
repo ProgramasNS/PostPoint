@@ -70,7 +70,9 @@ export const atualizarPost = async (req: Request, res: Response) => {
         const post = await db.posts.findUnique({
             where: {id: Number(postId)}
         });
-
+        if (!post) {
+            return res.status(HttpCodes.NOT_FOUND).json({error: 'Post não encontrado!'});
+        }
         if (userId !== post?.user_id) {
             return res.status(HttpCodes.UNAUTHORIZED).json({error: "Somente o(a) criador(a) do post pode atualizá-lo!"});
         }
