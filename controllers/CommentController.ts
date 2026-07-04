@@ -120,8 +120,8 @@ export const excluirComentario = async (req: Request, res: Response) => {
         }
         await db.comments.delete({
         where: {id: Number(commentId)}});
-        return res.status(HttpCodes.OK).json({message: "Post excluído com sucesso!"});
+        return res.status(HttpCodes.OK).json({message: "Comentário excluído com sucesso!"});
     } catch (err: any) {
-        return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({error: "Erro ao excluir post!"});
+        return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({error: "Erro ao excluir comentário!"});
     }
 };

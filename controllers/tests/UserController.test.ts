@@ -41,11 +41,29 @@ describe('Testes para users', () => {
                     expect(res.body.error).toBe("E-mail já cadastrado no sistema!");
                 }
             );
-            //Função edge cases correspondente a "cadastrarUsuario" (caso o(a) usuário(a) falte com qualquer uma das informações obrigatórias)
+            //Função edge cases correspondente a "cadastrarUsuario" (caso o(a) usuário(a) falte com o nickname)
             test(
-                'Verificando o preenchimento de todas as informações', async () => {
-                
+                'Verificando o preenchimento do nickname', async () => {
+                const content = {email: "email@email.com", password: await bcrypt.hash('Senha para teste', 10)}
+                const res = await request(app).post('/new').send(content);
+                expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
              }
+            )
+            //Função edge cases correspondente a "cadastrarUsuario" (caso o(a) usuário(a) falte com o e-mail)
+            test(
+                'Verificando o preenchimento do e-mail', async () => {
+                    const content = {nickname: 'Usuário de teste', password: await bcrypt.hash('Senha de teste', 10)};
+                    const res = await request(app).post('/new').send(content);
+                    expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
+                }
+            )
+            //Função edge cases correspondente a "cadastrarUsuario" (caso o(a) usuário(a) falte com a senha)
+            test(
+                'Verificando o preenchimento da senha', async () => {
+                    const content = {nickname: 'Nome de teste', email: "email@email.com"};
+                    const res = await request(app).post('/new').send(content);
+                    expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
+                }
             )
         }
     )

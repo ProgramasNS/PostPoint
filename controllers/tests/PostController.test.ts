@@ -1,12 +1,29 @@
-import { afterAll, describe, expect, test} from "@jest/globals";
+import { afterAll, beforeAll, describe, expect, test} from "@jest/globals";
 import request from 'supertest';
 import app from "../../app";
 import HttpCodes from "../../objects/Http";
 import { PrismaClient } from "@prisma/client";
+import verificarToken from "../../middlewares/auth";
+import {Request, Response} from 'express';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
+dotenv.config();
+
+const content = {title: "Título de teste", content: "Conteúdo de teste", date: new Date(), user_id: 1};
+
+const token = async () => {
+    const token = await jwt.sign(
+        content, 
+        process.env.JWT_SECRET || "Meu segredo muito secreto",
+        {expiresIn: '7d'}
+    )
+    return token;
+}
 const client = new PrismaClient();
 
 describe('Testes para posts', () => {
+    beforeAll(async () => await token())
     afterAll(async () => {
         await client.posts.deleteMany();
         await client.$disconnect();
@@ -17,10 +34,7 @@ describe('Testes para posts', () => {
             test(
                 'Criando novo post', async () => {
                     const userId = 1;
-                    const content = {
-                        title: "Título para teste", content: "Conteúdo para teste", date: new Date(), user_id: userId
-                    };
-                    const res = await request(app).post('/new').send(content);
+                    const res = await request(app).post('/new').set('Authorization', `Bearer ${await token()}`);
                     expect(res.body.content).toBe(content);
                     expect(res.statusCode).toBe(HttpCodes.CREATED);
                 }
@@ -29,7 +43,6 @@ describe('Testes para posts', () => {
             test(
                 'Deve retornar "FORBIDDEN" caso o(a) usuário(a) não seja autenticado(a)', async () => {
                     const userId = null;
-                    const content = {title: "Titulo de teste", content: "Conteúdo de teste", user_id: userId}
                     const res = await request(app).post('/new').send(content);
                     expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
                     expect(res.body.user_id).toBe(userId);
@@ -39,9 +52,7 @@ describe('Testes para posts', () => {
             //Função para edge cases correspondente a "criarPost" (caso o post tenha menos de 10 caracteres)
             test(
                 'Verificar se post possui menos de 10 caracteres', async () => {
-                    const content = {title: "Titulo para testes", content: null};
-                    const res = await request(app).post('/new').send(content); 
-                    expect(!res.body.content || res.body.content.length < 10).toBe(true);
+                    const res = await request(app).post('/new').set('Authorization', `Bearer ${await token()}`); 
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
                     expect(res.body.error).toBe("São necessários posts de pelo menos 10 caracteres!");
                 }
@@ -84,7 +95,7 @@ describe(
                 const postId = 1;
                 const title = "Titulo de teste";
                 const content = "Conteúdo de teste";
-                const res = await request(app).put(`/${postId}`).send({title, content});
+                const res = await request(app).put(`/${postId}`).send({title: 'Novo conteúdo', content: "Conteúdo novo"}).set('Authorization', `Bearer ${await token()}`);
                 expect(res.statusCode).toBe(HttpCodes.OK);
                 expect(res.body.title).toBe(title);
                 expect(res.body.content).toBe(content);
@@ -94,7 +105,7 @@ describe(
         test(
             'Deve retornar "Not Found" caso o post não exista', async () => {
                 const postId = null;
-                const res = await request(app).put(`/${postId}`).send({title: "Titulo de teste", content: "Conteúdo de teste"});
+                const res = await request(app).put(`/${postId}`).set('Authorization', `Bearer ${await token()}`).send({title: "Titulo de teste", content: "Conteúdo de teste"});
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe('Post não encontrado!');
             }
@@ -102,11 +113,11 @@ describe(
         //Função para edge cases correspondente a "atualizarPost" (caso o(a) usuário(a) não tenha criado o post)
         test(
             'Deve retornar "UNAUTHORIZED" caso o(a) usuário(a) não seja o(a) criador(a) do post', async () => {
-                const userId = null;
+                const userId = 9999;
                 const postId = 1;
                 const title = "Titulo de teste";
                 const content = "Conteudo de teste";
-                const res = await request(app).put(`/${postId}`).send({title, content});
+                const res = await request(app).put(`/${postId}`).send({user_id: userId, post_id: postId, title, content});
                 expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
                 expect(res.body.error).toBe("Somente o(a) criador(a) do post pode atualizá-lo!");
             }
@@ -120,7 +131,7 @@ describe(
         test(
             'Apagando um post', async () => {
                 const postId = 1;
-                const res = await request(app).delete(`/${postId}`);
+                const res = await request(app).delete(`/${postId}`).set('Authorization', `Bearer ${token}`);
                 expect(res.statusCode).toBe(HttpCodes.OK);
             }
         )
@@ -128,7 +139,7 @@ describe(
         test(
             'Verificar se post existe antes de excluir', async () => {
                 const postId = null;
-                const res = await request(app).delete(`/${postId}`);
+                const res = await request(app).delete(`/${postId}`).set('Authorization', `Bearer ${await token()}`);
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe("Post não encontrado!");
             }

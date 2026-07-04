@@ -1,12 +1,25 @@
 import request from 'supertest'
 import HttpCodes from '../../objects/Http'
 import app from '../../app';
-import { describe, it, test, expect, afterAll} from '@jest/globals';
+import { describe, it, test, expect, afterAll, beforeAll} from '@jest/globals';
 import {PrismaClient} from '@prisma/client';
+import jwt from 'jsonwebtoken';
 
 const client = new PrismaClient();
+const content = {user_id: 1, content: 'Conteúdo para testes'}
+const token = async () => {
+    const token = await jwt.sign(
+        content, 
+        process.env.JWT_SECRET || "Meu segredo muito secreto",
+        {expiresIn: '7d'}
+    )
+    return token;
+}
 
 describe('Testes para comentários', () => {
+    beforeAll(
+        async () => await token()
+    )
     afterAll(async () => {
         await client.comments.deleteMany();
         await client.$disconnect();
@@ -17,7 +30,7 @@ describe('Testes para comentários', () => {
             test("Deve criar um novo comentário", async () => {
                 const postId = 1;
                 const content = "Conteúdo de teste";
-                const res = await request(app).post(`/${postId}/new`).send({content});
+                const res = await request(app).post(`/${postId}/new`).set('Authorization', `Bearer ${await token()}`).send({content});
                 expect(res.statusCode).toBe(HttpCodes.CREATED);
                 expect(res.body.content).toBe(content);
             
@@ -27,7 +40,7 @@ describe('Testes para comentários', () => {
                 'Verificar se conteúdo tem mais de 10 caracteres', async () => {
                     const postId = 1;
                     const content = null;
-                    const res = await request(app).post(`/${postId}/new`).send({content});
+                    const res = await request(app).post(`/${postId}/new`).set('Authorization', `Bearer ${await token()}`);
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
                     expect(res.body.error).toBe("Comentários precisam de pelo menos 10 caracteres!");
                 }
@@ -49,8 +62,8 @@ describe('Testes para comentários', () => {
                 'Verificando se post do comentário já existe', async () => {
                     const postId = null;
                     const commentId = 1;
-                    const content = {post_id: postId, id: commentId, content: "Conteúdo de teste"};
-                    const res = await request(app).post(`/${postId}/new`).send(content);
+                    const contentLocal = {post_id: postId, id: commentId, content: "Conteúdo de teste"};
+                    const res = await request(app).post(`/${postId}/new`).set('Authorization', `Bearer ${await token()}`).send(contentLocal);
                     expect(res.body.post_id).toBe(postId);
                     expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                     expect(res.body.error).toBe("Post não encontrado!");
@@ -107,9 +120,9 @@ describe('Testes para comentários', () => {
             'O comentário deve ser atualizado', async () => {
                 const postId = 1;
                 const commentId = 1;
-                const content = "Conteúdo de teste";
-                const res = await request(app).put(`/${postId}/${commentId}`).send({
-                    content
+                const contentLocal = "Conteúdo de teste";
+                const res = await request(app).put(`/${postId}/${commentId}`).set('Authorization', `Bearer ${await token()}`).send({
+                    contentLocal
                 });
                 expect(res.statusCode).toBe(HttpCodes.OK);
 
@@ -121,7 +134,7 @@ describe('Testes para comentários', () => {
                 const postId = 1;
                 const commentId = null;
                 const content = {post_id: postId, id: commentId, content: "Conteúdo de teste"}
-                const res = await request(app).put(`/${postId}/${commentId}`).send(content);
+                const res = await request(app).put(`/${postId}/${commentId}`).send(content).set('Authorization', `Bearer ${token}`);
                 expect(res.body.comment_id).toBe(commentId);
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe("Comentário não encontrado!");
@@ -130,7 +143,7 @@ describe('Testes para comentários', () => {
         //Função edge cases correspondente a "atualizarComentario" (caso o(a) usuário(a) não seja criador(a) do comentário)
         test(
             'Verificar se o(a) usuário(a) é autor(a) do comentário', async () => {
-                const userId = null;
+                const userId = 9999;
                 const postId = 1;
                 const commentId = 1;
                 const content = {post_id: postId, id: commentId, content: 'Conteúdo para testes'};
@@ -147,7 +160,7 @@ describe('Testes para comentários', () => {
             'O comentário deve ser excluído', async () => {
                 const postId = 1;
                 const commentId = 1;
-                const res = await request(app).delete(`/${postId}/${commentId}`);
+                const res = await request(app).delete(`/${postId}/${commentId}`).set('Authorization', `Bearer ${await token()}`);
                 expect(res.statusCode).toBe(HttpCodes.OK);
             }
         )
@@ -156,7 +169,7 @@ describe('Testes para comentários', () => {
             'Verificando se o comentário existe', async () => {
                 const postId = 1;
                 const commentId = null;
-                const res = await request(app).delete(`/${postId}/${commentId}`);
+                const res = await request(app).delete(`/${postId}/${commentId}`).set('Authorization', `Bearer ${await token()}`);
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe("Comentário não encontrado!");
             }
