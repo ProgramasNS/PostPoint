@@ -15,10 +15,13 @@ const token = async () => {
     )
     return token;
 }
-
+let hashSenhaUniversal = "Senha super segura"
 describe('Testes para users', () => {
     beforeAll(
-        async() => await token()
+        async() => {
+            await token();
+            hashSenhaUniversal = await bcrypt.hash(hashSenhaUniversal, 10);
+        }
     )
     afterAll(async () => {
         await client.users.deleteMany();
@@ -29,8 +32,7 @@ describe('Testes para users', () => {
             //Função correspondente a "cadastrarUsuario"
             test(
                 'Cadastrar novo(a) usuário(a)', async () => {
-                    const password = await bcrypt.hash("Senha de teste", 10);
-                    const user = {nickname: 'Teste', email: 'testando@testuser.com', password};
+                    const user = {nickname: 'Teste', email: 'testando@testuser.com', password: hashSenhaUniversal};
                     const res = await request(app).post('/new').send(user);
                     expect(res.statusCode).toBe(HttpCodes.CREATED);
                 }
@@ -38,7 +40,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "cadastrarUsuario" (caso o nickname já exista)
             test(
                 'Verificar nickname existente', async () => {
-                    const user = {nickname: "Usuário de teste", email: "teste@testmail.com", password: await bcrypt.hash("Senha de teste", 10)};
+                    const user = {nickname: "Usuário de teste", email: "teste@testmail.com", password: hashSenhaUniversal};
                     const res = await request(app).post('/new').send(user);
                     expect(res.statusCode).toBe(HttpCodes.CONFLICT);
                     expect(res.body.error).toBe(`${user.nickname} já existe. Use outro.`);
@@ -48,7 +50,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "cadastrarUsuario" (caso o e-mail já exista)
             test(
                 'Verificar se um e-mail já existe', async () => {
-                    const user = {nickname: "Usuário de teste", email: "email@email.com", password: await bcrypt.hash("Senha de teste", 10)};
+                    const user = {nickname: "Usuário de teste", email: "email@email.com", password: hashSenhaUniversal};
                     const res = await request(app).post('/new').send(user);
                     expect(res.statusCode).toBe(HttpCodes.CONFLICT);
                     expect(res.body.error).toBe("E-mail já cadastrado no sistema!");
@@ -57,7 +59,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "cadastrarUsuario" (caso o(a) usuário(a) falte com o nickname)
             test(
                 'Verificando o preenchimento do nickname', async () => {
-                const content = {email: "email@email.com", password: await bcrypt.hash('Senha para teste', 10)}
+                const content = {email: "email@email.com", password: hashSenhaUniversal}
                 const res = await request(app).post('/new').send(content);
                 expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
              }
@@ -65,7 +67,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "cadastrarUsuario" (caso o(a) usuário(a) falte com o e-mail)
             test(
                 'Verificando o preenchimento do e-mail', async () => {
-                    const content = {nickname: 'Usuário de teste', password: await bcrypt.hash('Senha de teste', 10)};
+                    const content = {nickname: 'Usuário de teste', password: hashSenhaUniversal};
                     const res = await request(app).post('/new').send(content);
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
                 }
@@ -86,7 +88,7 @@ describe('Testes para users', () => {
             //Função correspondente a "login"
             test(
                 'Fazendo login de novo usuário', async () => {
-                    const content = {nickname: 'Usuário de teste', password: await bcrypt.hash("Senha de teste", 10)}
+                    const content = {nickname: 'Usuário de teste', password: "Senha super segura"}
                     const res = await request(app).post('/login').send(content);
                     expect(res.statusCode).toBe(HttpCodes.OK);
                 }
@@ -94,7 +96,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "login" (caso o nickname não exista no banco de dados)
             test(
                 'Verificando se nickname existe', async () => {
-                    const content = {nickname: "Nick para testes", password: await bcrypt.hash("Senha para testes", 10)}
+                    const content = {nickname: "Nick para testes", password: "Senha super segura"}
                     const res = await request(app).post('/login').send(content);
                     expect(res.body.user_id).toBe(null);
                     expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
@@ -104,7 +106,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "login" (caso a senha esteja errada)
             test(
                 'Verificando se a senha está correta', async () => {
-                    const content = {nickname: 'User de teste', password: 'Senha sem criptografia'}; //Todas as senhas são criptografadas; caso não haja criptografia no request, é impossível ela estar correta.
+                    const content = {nickname: 'User de teste', password: hashSenhaUniversal}; //Todas as senhas são criptografadas; essa senha passaria por dupla criptografia, impossibilitando a comparação com o usuário já existente. Portanto, está sempre incorreta
                     const res = await request(app).post('/login').send(content);
                     expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
                     expect(res.body.error).toBe('Senha incorreta!');
@@ -113,7 +115,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "login" (caso o nickname não tenha sido enviado)
             test(
                 'Verificando se o nickname foi enviado na requisição', async () => {
-                    const content = {password: await bcrypt.hash('Senha de teste', 10)}
+                    const content = {password: "Senha super segura"}
                     const res = await request(app).post('/login').send(content);
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
                 }
@@ -130,7 +132,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "login" (caso o login não gere um token)
             test(
                 'Verificando se login retorna token', async () => {
-                    const content = {nickname: 'Usuário de teste', password: await bcrypt.hash("Senha de teste", 10)};
+                    const content = {nickname: 'Usuário de teste', password: 'Senha super segura'};
                     const res = await request(app).post('/login').send(content);
                     expect(res.body.token).toBeDefined();
                 }

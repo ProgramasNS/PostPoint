@@ -64,17 +64,17 @@ export const atualizarFoto = async (req: Request, res: Response) => {
         const userId = req.userId;
         const {url} = req.body;
         const validFormats = ['jpeg', 'jpg', 'png', 'tiff', 'gif'];
+        if (!url) {
+            return res.status(HttpCodes.BAD_REQUEST).json({error: "É obrigatório adicionar o endereço da imagem!"});
+        }
         let isValid = false;
-        for (const format in validFormats) {
+        for (const format of validFormats) {
             if (url.toLowerCase().endsWith(format)) {
                 isValid = true;
             }
         }
         if (!isValid) {
             return res.status(HttpCodes.BAD_REQUEST).json({error: "Insira uma imagem válida!"});
-        }
-        if (!url) {
-            return res.status(HttpCodes.BAD_REQUEST).json({error: "É obrigatório adicionar o endereço da imagem!"});
         }
         if (!userId) {
             return res.status(HttpCodes.FORBIDDEN).json({error: "É necessário estar autenticado(a) para atualizar a foto de perfil!"});
