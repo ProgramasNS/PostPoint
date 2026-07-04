@@ -44,7 +44,7 @@ export const login = async (req: Request, res: Response) => {
             where: {nickname}
         });
         if (!nickExists) {
-            return res.status(HttpCodes.UNAUTHORIZED).json({error: "Usuário(a) não existe!"});
+            return res.status(HttpCodes.NOT_FOUND).json({error: "Usuário(a) não existe!"});
         }
         const senhaCerta = await bcrypt.compare(password, nickExists.password);
         if (!senhaCerta) {
@@ -63,8 +63,21 @@ export const atualizarFoto = async (req: Request, res: Response) => {
     try {
         const userId = req.userId;
         const {url} = req.body;
+        const validFormats = ['jpeg', 'jpg', 'png', 'tiff', 'gif'];
+        let isValid = false;
+        for (const format in validFormats) {
+            if (url.toLowerCase().endsWith(format)) {
+                isValid = true;
+            }
+        }
+        if (!isValid) {
+            return res.status(HttpCodes.BAD_REQUEST).json({error: "Insira uma imagem válida!"});
+        }
         if (!url) {
-            return res.status(HttpCodes.BAD_REQUEST).json("É obrigatório adicionar o endereço da imagem!");
+            return res.status(HttpCodes.BAD_REQUEST).json({error: "É obrigatório adicionar o endereço da imagem!"});
+        }
+        if (!userId) {
+            return res.status(HttpCodes.FORBIDDEN).json({error: "É necessário estar autenticado(a) para atualizar a foto de perfil!"});
         }
         const reqImagem = await db.users.update({where: {id: userId}, data: {
                 profilePic: url
