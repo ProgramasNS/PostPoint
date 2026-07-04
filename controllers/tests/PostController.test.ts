@@ -1,56 +1,55 @@
-import { describe, expect, test} from "@jest/globals";
+import { afterAll, describe, expect, test} from "@jest/globals";
 import request from 'supertest';
 import app from "../../app";
 import HttpCodes from "../../objects/Http";
+import { PrismaClient } from "@prisma/client";
 
-//Função correspondente a "criarPost"
-describe(
-    'POST /new', () => {
-        test(
-            'Criando novo post', async () => {
-                const userId = 1;
-                const content = {
-                    title: "Título para teste", content: "Conteúdo para teste", date: new Date(), user_id: userId
-                };
-                const res = await request(app).post('/new').send(content);
-                expect(res.body.content).toBe(content);
-                expect(res.statusCode).toBe(HttpCodes.CREATED);
-            }
-        )
-    }
-);
+const client = new PrismaClient();
 
-//Função para edge cases correspondente a "criarPost" (caso o(a) usuário(a) não esteja autenticado(a))
-describe(
-    'POST /new', () => {
-        test(
-            'Deve retornar "FORBIDDEN" caso o(a) usuário(a) não seja autenticado(a)', async () => {
-                const userId = null;
-                const content = {title: "Titulo de teste", content: "Conteúdo de teste", user_id: userId}
-                const res = await request(app).post('/new').send(content);
-                expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
-                expect(res.body.user_id).toBe(userId);
-                expect(res.body.error).toBe("Você não está autenticado(a)!");
-            }
-        )
-    }
+describe('Testes para posts', () => {
+    afterAll(async () => {
+        await client.posts.deleteMany();
+        await client.$disconnect();
+    })
+    //Função correspondente a "criarPost"
+    describe(
+        'POST /new', () => {
+            test(
+                'Criando novo post', async () => {
+                    const userId = 1;
+                    const content = {
+                        title: "Título para teste", content: "Conteúdo para teste", date: new Date(), user_id: userId
+                    };
+                    const res = await request(app).post('/new').send(content);
+                    expect(res.body.content).toBe(content);
+                    expect(res.statusCode).toBe(HttpCodes.CREATED);
+                }
+            )
+            //Função para edge cases correspondente a "criarPost" (caso o(a) usuário(a) não esteja autenticado(a))
+            test(
+                'Deve retornar "FORBIDDEN" caso o(a) usuário(a) não seja autenticado(a)', async () => {
+                    const userId = null;
+                    const content = {title: "Titulo de teste", content: "Conteúdo de teste", user_id: userId}
+                    const res = await request(app).post('/new').send(content);
+                    expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
+                    expect(res.body.user_id).toBe(userId);
+                    expect(res.body.error).toBe("Você não está autenticado(a)!");
+                }
+            )
+            //Função para edge cases correspondente a "criarPost" (caso o post tenha menos de 10 caracteres)
+            test(
+                'Verificar se post possui menos de 10 caracteres', async () => {
+                    const content = {title: "Titulo para testes", content: null};
+                    const res = await request(app).post('/new').send(content); 
+                    expect(!res.body.content || res.body.content.length < 10).toBe(true);
+                    expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
+                    expect(res.body.error).toBe("São necessários posts de pelo menos 10 caracteres!");
+                }
+            )
+        }
+    )
+  }
 )
-
-//Função para edge cases correspondente a "criarPost" (caso o post tenha menos de 10 caracteres)
-describe(
-    'POST /new', () => {
-        test(
-            'Verificar se post possui menos de 10 caracteres', async () => {
-                const content = {title: "Titulo para testes", content: null};
-                const res = await request(app).post('/new').send(content); 
-                expect(!res.body.content || res.body.content.length < 10).toBe(true);
-                expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
-                expect(res.body.error).toBe("São necessários posts de pelo menos 10 caracteres!");
-            }
-        )
-    }
-)
-
 //Função correspondente a "listarPosts"
 describe(
     'GET /', () => {
@@ -62,12 +61,7 @@ describe(
                 expect(Array.isArray(posts)).toBe(true);
             }
         )
-    }
-);
-
-//Função correspondente a listarPostsPorUsuario
-describe(
-    'GET /author/:authorId', () => {
+        //Função correspondente a listarPostsPorUsuario
         test(
             'Listar os posts de um usuário específico', async () => {
                 const authorId = 1;
@@ -96,12 +90,7 @@ describe(
                 expect(res.body.content).toBe(content);
             }
         )
-    }
-);
-
-//Função para edge cases correspondente a "atualizarPost" (caso o post não exista)
-describe(
-    'PUT /:postId', () => {
+        //Função para edge cases correspondente a "atualizarPost" (caso o post não exista)
         test(
             'Deve retornar "Not Found" caso o post não exista', async () => {
                 const postId = null;
@@ -110,12 +99,7 @@ describe(
                 expect(res.body.error).toBe('Post não encontrado!');
             }
         )
-    }
-)
-
-//Função para edge cases correspondente a "atualizarPost" (caso o(a) usuário(a) não tenha criado o post)
-describe(
-    'PUT /:postId', () => {
+        //Função para edge cases correspondente a "atualizarPost" (caso o(a) usuário(a) não tenha criado o post)
         test(
             'Deve retornar "UNAUTHORIZED" caso o(a) usuário(a) não seja o(a) criador(a) do post', async () => {
                 const userId = null;
@@ -140,12 +124,7 @@ describe(
                 expect(res.statusCode).toBe(HttpCodes.OK);
             }
         )
-    }
-)
-
-//Função para edge cases correspondente a "excluirPost" (caso o post não exista)
-describe(
-    'DELETE /:postId', () => {
+        //Função para edge cases correspondente a "excluirPost" (caso o post não exista)
         test(
             'Verificar se post existe antes de excluir', async () => {
                 const postId = null;
@@ -154,12 +133,7 @@ describe(
                 expect(res.body.error).toBe("Post não encontrado!");
             }
         )
-    }
-)
-
-//Função para edge cases correspondente a "excluirPost" (caso o(a) usuário(a) não seja autor(a) do post)
-describe(
-    'DELETE /:postId', () => {
+        //Função para edge cases correspondente a "excluirPost" (caso o(a) usuário(a) não seja autor(a) do post)
         test(
             'Verifica se o(a) usuário(a) é autor(a) do post', async () => {
                 const userId = null;
