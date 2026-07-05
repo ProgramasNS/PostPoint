@@ -2,7 +2,7 @@ import request from 'supertest'
 import HttpCodes from '../../objects/Http'
 import app from '../../app';
 import { describe, it, test, expect, afterAll, beforeAll} from '@jest/globals';
-import {PrismaClient} from '@prisma/client';
+import { PrismaClient } from '../../generated/prisma';
 import jwt from 'jsonwebtoken';
 
 const client = new PrismaClient();

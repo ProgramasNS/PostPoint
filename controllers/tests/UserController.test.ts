@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import request from 'supertest';
 import app from "../../app";
 import HttpCodes from "../../objects/Http";
-import {PrismaClient} from '@prisma/client';
+import { PrismaClient } from '../../generated/prisma';
 import jwt from 'jsonwebtoken';
 
 const client = new PrismaClient();

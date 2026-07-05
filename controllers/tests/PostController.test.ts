@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test} from "@jest/globals";
 import request from 'supertest';
 import app from "../../app";
 import HttpCodes from "../../objects/Http";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '../../generated/prisma';
 import verificarToken from "../../middlewares/auth";
 import {Request, Response} from 'express';
 import jwt from 'jsonwebtoken';
