@@ -1,5 +1,3 @@
-name: CI Pipeline
-
 on:
   push:
     branches: [ "main" ]
@@ -22,17 +20,19 @@ jobs:
 
       - name: Instalar dependências
         run: npm ci
-        
-      - name: Gerar o Prisma
-        run: npx prisma generate
 
       - name: Rodar migrations Prisma
         env:
           DATABASE_URL: ${{ vars.DATABASE_URL }}
         run: npx prisma migrate deploy
 
+      - name: Gerar o Prisma
+        run: npx prisma generate
+
       - name: Rodar testes
         run: npm test
+        env:
+          DATABASE_URL: ${{ vars.DATABASE_URL }}
 
       - name: Build do projeto
         run: npm run build
