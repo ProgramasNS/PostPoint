@@ -14,4 +14,4 @@ ENV DATABASE_URL=$DATABASE_URL
 
 EXPOSE 3000
 
-CMD ["npx", "tsx", "index.ts"]
+CMD ["npm", "start"]

@@ -127,5 +127,159 @@
     </pre>
     <p>E a API poderá ser executada no: <a href="http://localhost:3000">http://localhost:3000</a></p>
     <li><h3>Executando manualmente (sem Docker)</h3></li>
-    <p></p>
+    <p>Para a execução manual, é necessário ter pelo menos a versão 20 do Node.js. Tendo o node já instalado em seu computador, faça a instalação dos devidos módulos por meio do pacote npm, por meio desse comando:</p>
+    <pre>
+        <code>npm install --production</code>
+    </pre>
+    <p>Isso vai instalar todos os módulos necessários contidos no package.json. Logo depois, supondo que o arquivo .env já tenha sido criado, você precisa gerar o Prisma como uma garantia de funcionamento dos módulos (uma vez que o banco de dados está num PrismaClient gerado pelo Prisma):</p>
+    <pre>
+        <code>npx prisma generate</code>
+    </pre>
+    <p>Isso vai gerar o PrismaClient necessário para os CRUDs e os controllers.</p>
+    <h4>Rodar testes automatizados</h4>
+    <p>Para verificar o funcionamento dos testes automatizados, execute: </p>
+    <pre>
+        <code>npm test</code>
+    </pre>
+    <p>E, caso queira executar algum módulo específico, execute: </p>
+    <pre>
+        <code>npx jest ModuloEspecifico.test.ts</code>
+    </pre>
+    <p>(Substitua "ModuloEspecifico.test.ts" pelo caminho para o arquivo de teste desejado.)</p>
+    <h4>Testando as APIs manualmente</h4>
+    <p>Para executar a aplicação manualmente, execute: </p>
+    <pre>
+        <code>npm start</code>
+    </pre>
+    <p>E o endereço padrão para a execução das APIs é <a href="http://localhost:8000/">http://localhost:8000/</a> E a mensagem que você receberá no terminal será como: </p>
+    <pre>
+        <code style="color: green">Servidor inicializado com sucesso!</code>
+    </pre>
+    <p>As APIs podem ser testadas por meio do terminal ou mesmo por aplicações como <a href="https://www.postman.com/">o Postman</a>.</p>
+    <p>Para se autenticar após o login (algo essencial para testar APIs que exigem autenticação), vá até o header "Authorization" e insira "Bearer {seu token}"</p>
+    <p>Os endereços de APIs, baseados nas routes, são: </p>
+    <table>
+        <thead>
+            <tr>
+                <th>Método</th>
+                <th>Rota</th>
+                <th>Descrição</th>
+                <th>Requisição ideal</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>POST</td>
+                <td>/api/user/new</td>
+                <td>Cadastra novo(a) usuário(a)</td>
+                <td>
+                    <pre>
+                        <code>{"nickname": "Fulano de tal", "email": "fulano@example.com", "password": "Senha de teste"}</code>
+                    </pre>
+                </td>
+            </tr>
+            <tr>
+                <td>POST</td>
+                <td>/api/user/login</td>
+                <td>Método para fazer login e gerar tokens de autenticação</td>
+                <td>
+                    <pre>
+                        <code>{"nickname": "Fulano de tal", "password": "Senha de teste"}</code>
+                    </pre>
+                </td>
+            </tr>
+            <tr>
+                <td>PUT</td>
+                <td>/api/user/photo</td>
+                <td>Permite ao(à) usuário(a) trocar sua foto de perfil (somente usuários autenticados)</td>
+                <td>
+                    <pre>
+                        <code>{"url": "https://www.shutterstock.com/image-vector/inventory-icon-stock-product-catalog-600w-2707791441.jpg"}</code>
+                    </pre>
+                </td>
+            </tr>
+            <tr>
+                <td>POST</td>
+                <td>/api/post/new</td>
+                <td>Cria novos posts (somente usuários autenticados)</td>
+                <td>
+                    <pre>
+                        <code>{"title": "Título de teste", "content": "Conteúdo de teste"}</code>
+                    </pre>
+                </td>
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>/api/post/</td>
+                <td>Lista todos os posts existentes no banco de dados</td>
+                <td>N/A</td>
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>/api/post/author/:authorId (Insira o número do ID de algum(a) usuário(a) no lugar de ":authorId")</td>
+                <td>Lista todos os posts de um(a) determinado(a) autor(a)</td>
+                <td>N/A</td>
+            </tr>
+            <tr>
+                <td>PUT</td>
+                <td>/api/post/:postId (substitua o ":postId" pelo número do ID de algum post que você criou)</td>
+                <td>Atualiza um post (somente usuários autenticados e que sejam autores do post desejado)</td>
+                <td>
+                    <pre>
+                        <code>{"title": "Novo título", "content": "Inserindo novo conteúdo"}</code>
+                    </pre>
+                </td>
+            </tr>
+            <tr>
+                <td>DELETE</td>
+                <td>/:postId (substitua o ":postId" pelo número do ID de algum post que você criou)</td>
+                <td>Apaga um post (somente usuários autenticados e que sejam autores de um post)</td>
+                <td>N/A</td>
+            </tr>
+            <tr>
+                <td>POST</td>
+                <td>/api/post/comment/:postId/new (substitua o ":postId" pelo id de qualquer post, tenha você criado ou não)</td>
+                <td>Cria um novo comentário em um determinado post (somente usuários autenticados)</td>
+                <td>
+                    <pre>
+                        <code>{"content": "Conteúdo de teste"}</code>
+                    </pre>
+                </td>
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>/api/post/comment</td>
+                <td>Lista todos os comentários do blog</td>
+                <td>N/A</td>
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>/api/post/comment/:userId (substitua ":authorId" pelo id de um(a) usuário(a) qualquer)</td>
+                <td>Lista os comentários de um(a) determinado(a) usuário(a).</td>
+                <td>N/A</td>
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>/api/post/comment/post/:postId (substitua ":postId" pelo id de algum dos posts presentes no banco de dados)</td>
+                <td>Lista todos os comentários de um determinado post</td>
+                <td>N/A</td>
+            </tr>
+            <tr>
+                <td>PUT</td>
+                <td>/api/post/comment/:postId/:commentId (substitua ":postId" pelo id de algum post, seja ele de sua autoria ou não, e substitua ":commentId", pelo id de um comentário obrigatoriamente de sua autoria).</td>
+                <td>Atualiza o comentário de um determinado post (somente usuários autenticados e usuários que são autores do comentário)</td>
+                <td>
+                    <pre>
+                        <code>{"content": "Novo conteúdo atualizado"}</code>
+                    </pre>
+                </td>
+            </tr>
+            <tr>
+                <td>DELETE</td>
+                <td>/api/post/comment/:postId/:commentId (substitua ":postId" pelo id de algum post, seja ele de sua autoria ou não, e substitua ":commentId", pelo id de um comentário obrigatoriamente de sua autoria).</td>
+                <td>Apaga um comentário (apenas usuários autenticados e apenas usuários que são autores dos comentários)</td>
+                <td>N/A</td>
+            </tr>
+        </tbody>
+    </table>
 </ol>
