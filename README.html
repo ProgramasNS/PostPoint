@@ -127,7 +127,7 @@
     </pre>
     <p>E a API poderá ser executada no: <a href="http://localhost:3000">http://localhost:3000</a></p>
     <li><h3>Executando manualmente (sem Docker)</h3></li>
-    <p>Para a execução manual, é necessário ter pelo menos a versão 20 do Node.js. Tendo o node já instalado em seu computador, faça a instalação dos devidos módulos por meio do pacote npm, por meio desse comando:</p>
+    <p>Para a execução manual, é necessário ter pelo menos a versão 18 do Node.js. Tendo o node já instalado em seu computador, faça a instalação dos devidos módulos por meio do pacote npm, por meio desse comando:</p>
     <pre>
         <code>npm install --production</code>
     </pre>
@@ -282,4 +282,12 @@
             </tr>
         </tbody>
     </table>
+</ol>
+<h2>CI/CD</h2>
+<p>A aplicação utiliza os princípios do CI/CD: Integração Contínua e Entrega Contínua, sob os quais a aplicação pode ser diretamente executada pelo servidor GitHub, de modo que você não precisa verificar o funcionamento da aplicação manualmente. As instruções necessárias estão no arquivo <code>ci.yml</code> e são necessários alguns ajustes caso queira testar as ferramentas do GitHub Actions: </p>
+<ol>
+    <li>Crie uma environment no GitHub chamada "My_ENV"</li>
+    <li>Defina, dentro da environment, as variáveis "DATABASE_URL" e "JWT_SECRET" com os mesmos valores que seu arquivo .env</li>
+    <li>Vá para a seção "Actions" do seu repositório e verifique se a aplicação funciona.</li>
+    <li>Concluído! Você agora poderá testar manualmente, uma vez que o funcionamento já está garantido pelo GitHub</li>
 </ol>

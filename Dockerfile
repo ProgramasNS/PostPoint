@@ -14,4 +14,5 @@ ENV DATABASE_URL=$DATABASE_URL
 
 EXPOSE 3000
 
+RUN npm test
 CMD ["npm", "start"]
