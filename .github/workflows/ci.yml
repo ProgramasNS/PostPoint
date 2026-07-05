@@ -35,6 +35,7 @@ jobs:
         run: npm test
         env:
           DATABASE_URL: ${{ vars.DATABASE_URL }}
+          JWT_SECRET: ${{vars.JWT_SECRET}}
 
       - name: Build do projeto
         run: npm run build
