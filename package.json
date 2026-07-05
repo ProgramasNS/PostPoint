@@ -18,6 +18,7 @@
     "dev": "nodemon ./index.ts",
     "build": "tsc",
     "start": "tsx ./index.ts",
+    "pretest": "prisma generate",
     "test": "jest"
   },
   "allowScripts": {
