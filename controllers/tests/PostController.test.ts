@@ -30,11 +30,11 @@ describe('Testes para posts', () => {
     })
     //Função correspondente a "criarPost"
     describe(
-        'POST /new', () => {
+        'POST /api/post/new', () => {
             test(
                 'Criando novo post', async () => {
                     const userId = 1;
-                    const res = await request(app).post('/new').set('Authorization', `Bearer ${await token()}`);
+                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${await token()}`);
                     expect(res.body.content).toBe(content);
                     expect(res.statusCode).toBe(HttpCodes.CREATED);
                 }
@@ -43,7 +43,7 @@ describe('Testes para posts', () => {
             test(
                 'Deve retornar "FORBIDDEN" caso o(a) usuário(a) não seja autenticado(a)', async () => {
                     const userId = null;
-                    const res = await request(app).post('/new').send(content);
+                    const res = await request(app).post('/api/post/new').send(content);
                     expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
                     expect(res.body.user_id).toBe(userId);
                     expect(res.body.error).toBe("Você não está autenticado(a)!");
@@ -52,7 +52,7 @@ describe('Testes para posts', () => {
             //Função para edge cases correspondente a "criarPost" (caso o post tenha menos de 10 caracteres)
             test(
                 'Verificar se post possui menos de 10 caracteres', async () => {
-                    const res = await request(app).post('/new').set('Authorization', `Bearer ${await token()}`); 
+                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${await token()}`); 
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
                     expect(res.body.error).toBe("São necessários posts de pelo menos 10 caracteres!");
                 }
@@ -66,7 +66,7 @@ describe(
     'GET /', () => {
         test(
             'Listar todos os posts', async () => {
-                const res = await request(app).get('/');
+                const res = await request(app).get('/api/post/');
                 const posts = res.body;
                 expect(res.statusCode).toBe(HttpCodes.OK);
                 expect(Array.isArray(posts)).toBe(true);
@@ -75,12 +75,12 @@ describe(
     }
 );
 
-describe('GET /author/:authorId', () => {
+describe('GET /api/post/author/:authorId', () => {
      //Função correspondente a listarPostsPorUsuario
         test(
             'Listar os posts de um usuário específico', async () => {
                 const authorId = 1;
-                const res = await request(app).get(`/author/${authorId}`);
+                const res = await request(app).get(`/api/post/author/${authorId}`);
                 expect(res.statusCode).toBe(HttpCodes.OK);
                 const postsUser = res.body;
                 postsUser.forEach((post: any) => {
@@ -93,7 +93,7 @@ describe('GET /author/:authorId', () => {
         test(
             'Verificando se usuário(a) existe', async () => {
                 const authorId = 99999;
-                const res = await request(app).get(`/author/${authorId}`);
+                const res = await request(app).get(`/api/post/author/${authorId}`);
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe("Usuário(a) não encontrado(a)!");
             }
@@ -109,7 +109,7 @@ describe(
                 const postId = 1;
                 const title = "Titulo de teste";
                 const content = "Conteúdo de teste";
-                const res = await request(app).put(`/${postId}`).send({title: 'Novo conteúdo', content: "Conteúdo novo"}).set('Authorization', `Bearer ${await token()}`);
+                const res = await request(app).put(`/api/post/${postId}`).send({title: 'Novo conteúdo', content: "Conteúdo novo"}).set('Authorization', `Bearer ${await token()}`);
                 expect(res.statusCode).toBe(HttpCodes.OK);
                 expect(res.body.title).toBe(title);
                 expect(res.body.content).toBe(content);
@@ -119,7 +119,7 @@ describe(
         test(
             'Deve retornar "Not Found" caso o post não exista', async () => {
                 const postId = null;
-                const res = await request(app).put(`/${postId}`).set('Authorization', `Bearer ${await token()}`).send({title: "Titulo de teste", content: "Conteúdo de teste"});
+                const res = await request(app).put(`/api/post/${postId}`).set('Authorization', `Bearer ${await token()}`).send({title: "Titulo de teste", content: "Conteúdo de teste"});
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe('Post não encontrado!');
             }
@@ -131,7 +131,7 @@ describe(
                 const postId = 1;
                 const title = "Titulo de teste";
                 const content = "Conteudo de teste";
-                const res = await request(app).put(`/${postId}`).send({user_id: userId, post_id: postId, title, content});
+                const res = await request(app).put(`/api/post/${postId}`).send({user_id: userId, post_id: postId, title, content});
                 expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
                 expect(res.body.error).toBe("Somente o(a) criador(a) do post pode atualizá-lo!");
             }
@@ -145,7 +145,7 @@ describe(
         test(
             'Apagando um post', async () => {
                 const postId = 1;
-                const res = await request(app).delete(`/${postId}`).set('Authorization', `Bearer ${token}`);
+                const res = await request(app).delete(`/api/post/${postId}`).set('Authorization', `Bearer ${token}`);
                 expect(res.statusCode).toBe(HttpCodes.OK);
             }
         )
@@ -153,7 +153,7 @@ describe(
         test(
             'Verificar se post existe antes de excluir', async () => {
                 const postId = null;
-                const res = await request(app).delete(`/${postId}`).set('Authorization', `Bearer ${await token()}`);
+                const res = await request(app).delete(`/api/post/${postId}`).set('Authorization', `Bearer ${await token()}`);
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe("Post não encontrado!");
             }
@@ -163,7 +163,7 @@ describe(
             'Verifica se o(a) usuário(a) é autor(a) do post', async () => {
                 const userId = null;
                 const postId = 1;
-                const res = await request(app).delete(`/${postId}`);
+                const res = await request(app).delete(`/api/post/${postId}`);
                 expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
                 expect(res.body.error).toBe('Somente o(a) criador(a) do post pode excluí-lo!');
             }
