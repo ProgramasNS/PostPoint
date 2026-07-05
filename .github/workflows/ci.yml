@@ -23,13 +23,13 @@ jobs:
       - name: Instalar dependências
         run: npm install
 
-      - name: Rodar testes
-        run: npm test
-
       - name: Rodar migrations Prisma
         env:
           DATABASE_URL: ${{ vars.DATABASE_URL }}
         run: npx prisma migrate deploy
+
+      - name: Rodar testes
+        run: npm test
 
       - name: Build do projeto
         run: npm run build
