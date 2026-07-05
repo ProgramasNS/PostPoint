@@ -34,16 +34,20 @@ describe('Testes para posts', () => {
             test(
                 'Criando novo post', async () => {
                     const userId = 1;
-                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${await token()}`);
-                    expect(res.body.content).toBe(content);
+                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${await token()}`).send(content);
+                    expect(res.body.content).toBe(content.content);
+                    expect(res.body.title).toBe(content.title);
+                    expect(res.body.user_id).toBe(content.user_id);
                     expect(res.statusCode).toBe(HttpCodes.CREATED);
                 }
             )
             //Função para edge cases correspondente a "criarPost" (caso o(a) usuário(a) não esteja autenticado(a))
             test(
                 'Deve retornar "FORBIDDEN" caso o(a) usuário(a) não seja autenticado(a)', async () => {
-                    const userId = null;
-                    const res = await request(app).post('/api/post/new').send(content);
+                    const userId = 0;
+                    let contentCopia = content;
+                    contentCopia.user_id = userId;
+                    const res = await request(app).post('/api/post/new').send(contentCopia);
                     expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
                     expect(res.body.user_id).toBe(userId);
                     expect(res.body.error).toBe("Você não está autenticado(a)!");
@@ -52,7 +56,7 @@ describe('Testes para posts', () => {
             //Função para edge cases correspondente a "criarPost" (caso o post tenha menos de 10 caracteres)
             test(
                 'Verificar se post possui menos de 10 caracteres', async () => {
-                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${await token()}`); 
+                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${await token()}`).send({content: ''}); 
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
                     expect(res.body.error).toBe("São necessários posts de pelo menos 10 caracteres!");
                 }
@@ -84,7 +88,7 @@ describe('GET /api/post/author/:authorId', () => {
                 expect(res.statusCode).toBe(HttpCodes.OK);
                 const postsUser = res.body;
                 postsUser.forEach((post: any) => {
-                    expect(post.user_id).toBe(authorId);
+                    expect(Number(post.user_id)).toBe(authorId);
                 });
             }
         );
@@ -108,17 +112,17 @@ describe(
             'Atualizar determinado post', async () => {
                 const postId = 1;
                 const title = "Titulo de teste";
-                const content = "Conteúdo de teste";
-                const res = await request(app).put(`/api/post/${postId}`).send({title: 'Novo conteúdo', content: "Conteúdo novo"}).set('Authorization', `Bearer ${await token()}`);
+                const contentLocal = "Conteúdo de teste";
+                const res = await request(app).put(`/api/post/${postId}`).send({title, content: contentLocal}).set('Authorization', `Bearer ${await token()}`);
                 expect(res.statusCode).toBe(HttpCodes.OK);
                 expect(res.body.title).toBe(title);
-                expect(res.body.content).toBe(content);
+                expect(res.body.content).toBe(contentLocal);
             }
         )
         //Função para edge cases correspondente a "atualizarPost" (caso o post não exista)
         test(
             'Deve retornar "Not Found" caso o post não exista', async () => {
-                const postId = null;
+                const postId = 0;
                 const res = await request(app).put(`/api/post/${postId}`).set('Authorization', `Bearer ${await token()}`).send({title: "Titulo de teste", content: "Conteúdo de teste"});
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe('Post não encontrado!');
@@ -145,14 +149,14 @@ describe(
         test(
             'Apagando um post', async () => {
                 const postId = 1;
-                const res = await request(app).delete(`/api/post/${postId}`).set('Authorization', `Bearer ${token}`);
+                const res = await request(app).delete(`/api/post/${postId}`).set('Authorization', `Bearer ${await token()}`);
                 expect(res.statusCode).toBe(HttpCodes.OK);
             }
         )
         //Função para edge cases correspondente a "excluirPost" (caso o post não exista)
         test(
             'Verificar se post existe antes de excluir', async () => {
-                const postId = null;
+                const postId = 0;
                 const res = await request(app).delete(`/api/post/${postId}`).set('Authorization', `Bearer ${await token()}`);
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe("Post não encontrado!");
@@ -161,7 +165,7 @@ describe(
         //Função para edge cases correspondente a "excluirPost" (caso o(a) usuário(a) não seja autor(a) do post)
         test(
             'Verifica se o(a) usuário(a) é autor(a) do post', async () => {
-                const userId = null;
+                const userId = 0;
                 const postId = 1;
                 const res = await request(app).delete(`/api/post/${postId}`);
                 expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);

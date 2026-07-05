@@ -144,14 +144,14 @@ describe('Testes para users', () => {
             //Função correspondente a "atualizarFoto"
             test(
                 'Atualizando a foto de perfil', async () => {
-                    const res = await request(app).put('/api/user/photo').set('Authorization', `Bearer ${await token()}`).send('https://media.istockphoto.com/id/1980276924/vector/no-photo-thumbnail-graphic-element-no-found-or-available-image-in-the-gallery-or-album-flat.jpg');
+                    const res = await request(app).put('/api/user/photo').set('Authorization', `Bearer ${await token()}`).send({url: 'https://media.istockphoto.com/id/1980276924/vector/no-photo-thumbnail-graphic-element-no-found-or-available-image-in-the-gallery-or-album-flat.jpg'});
                     expect(res.statusCode).toBe(HttpCodes.OK);
                 }
             )
             //Função edge cases correspondente a "atualizarFoto" (caso o url esteja vazio)
             test(
                 'Verificando se url foi enviado', async () => {
-                    const res = await request(app).put('/api/user/photo').set('Authorization', `Bearer ${await token()}`).send(undefined);
+                    const res = await request(app).put('/api/user/photo').set('Authorization', `Bearer ${await token()}`).send({url: ""});
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
                     expect(res.body.error).toBe("É necessário estar autenticado(a) para atualizar a foto de perfil!");
                 }
@@ -159,7 +159,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "atualizarFoto" (caso o(a) usuário(a) não seja autenticado(a))
             test(
                 'Verificando autenticação', async () => {
-                    const res = await request(app).put('/api/user/photo').send('https://media.istockphoto.com/id/1980276924/vector/no-photo-thumbnail-graphic-element-no-found-or-available-image-in-the-gallery-or-album-flat.jpg');
+                    const res = await request(app).put('/api/user/photo').send({url: 'https://media.istockphoto.com/id/1980276924/vector/no-photo-thumbnail-graphic-element-no-found-or-available-image-in-the-gallery-or-album-flat.jpg'});
                     expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
                     expect(res.body.error).toBe("É necessário estar autenticado(a) para atualizar a foto de perfil!");
                 }

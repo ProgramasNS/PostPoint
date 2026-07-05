@@ -39,8 +39,7 @@ describe('Testes para comentários', () => {
             test(
                 'Verificar se conteúdo tem mais de 10 caracteres', async () => {
                     const postId = 1;
-                    const content = null;
-                    const res = await request(app).post(`/api/post/comment/${postId}/new`).set('Authorization', `Bearer ${await token()}`);
+                    const res = await request(app).post(`/api/post/comment/${postId}/new`).set('Authorization', `Bearer ${await token()}`).send({content: ''});
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
                     expect(res.body.error).toBe("Comentários precisam de pelo menos 10 caracteres!");
                 }
@@ -48,11 +47,11 @@ describe('Testes para comentários', () => {
             //Função para edge cases correspondente a "criarComentario" caso o(a) usuário(a) não seja autenticado(a)
             test(
                 'Verifica se o(a) usuário(a) é autenticado(a)', async () => {
-                    const userId = null;
+                    const userId = 0;
                     const postId = 1;
-                    const content = {title: "Título de teste", content: "Conteúdo de teste", user_id: userId};
-                    const res = await request(app).post(`/api/post/comment/${postId}/new`).send(content);
-                    expect(res.body.user_id).toBe(userId);
+                    const contentLocal = {title: "Título de teste", content: "Conteúdo de teste", user_id: userId};
+                    const res = await request(app).post(`/api/post/comment/${postId}/new`).send(contentLocal);
+                    expect(Number(res.body.user_id)).toBe(userId);
                     expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
                     expect(res.body.error).toBe("Você não está autenticado(a)!");
                 }
@@ -60,11 +59,11 @@ describe('Testes para comentários', () => {
             //Função para edge cases correspondente a "criarComentario" caso o comentário já exista
             test(
                 'Verificando se post do comentário já existe', async () => {
-                    const postId = null;
+                    const postId = 0;
                     const commentId = 1;
                     const contentLocal = {post_id: postId, id: commentId, content: "Conteúdo de teste"};
                     const res = await request(app).post(`/api/post/comment/${postId}/new`).set('Authorization', `Bearer ${await token()}`).send(contentLocal);
-                    expect(res.body.post_id).toBe(postId);
+                    expect(Number(res.body.post_id)).toBe(postId);
                     expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                     expect(res.body.error).toBe("Post não encontrado!");
                 }
@@ -92,7 +91,7 @@ describe('Testes para comentários', () => {
                 const commentsUser = res.body;
                 expect(res.statusCode).toBe(HttpCodes.OK);
                 commentsUser.forEach((comment: any) => {
-                    expect(comment.user_id).toBe(userId);
+                    expect(Number(comment.user_id)).toBe(userId);
                 });
             }
         )
@@ -116,7 +115,7 @@ describe('Testes para comentários', () => {
                 const commentsPost = res.body;
                 expect(res.statusCode).toBe(HttpCodes.OK);
                 commentsPost.forEach((comment: any) => {
-                    expect(comment.post_id).toBe(postId);
+                    expect(Number(comment.post_id)).toBe(postId);
                 })
             }
         )
@@ -140,7 +139,7 @@ describe('Testes para comentários', () => {
                 const commentId = 1;
                 const contentLocal = "Conteúdo de teste";
                 const res = await request(app).put(`/api/post/comment/${postId}/${commentId}`).set('Authorization', `Bearer ${await token()}`).send({
-                    contentLocal
+                   content: contentLocal
                 });
                 expect(res.statusCode).toBe(HttpCodes.OK);
 
@@ -150,10 +149,10 @@ describe('Testes para comentários', () => {
         test(
             'Verificar se comentário existe', async () => {
                 const postId = 1;
-                const commentId = null;
+                const commentId = 0;
                 const content = {post_id: postId, id: commentId, content: "Conteúdo de teste"}
-                const res = await request(app).put(`/api/post/comment/${postId}/${commentId}`).send(content).set('Authorization', `Bearer ${token}`);
-                expect(res.body.comment_id).toBe(commentId);
+                const res = await request(app).put(`/api/post/comment/${postId}/${commentId}`).send(content).set('Authorization', `Bearer ${await token()}`);
+                expect(Number(res.body.comment_id)).toBe(commentId);
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe("Comentário não encontrado!");
             }
@@ -199,7 +198,7 @@ describe('Testes para comentários', () => {
                 const postId = 1;
                 const commentId = 1;
                 const res = await request(app).delete(`/api/post/comment/${postId}/${commentId}`);
-                expect(res.body.user_id).toBe(userId);
+                expect(Number(res.body.user_id)).toBe(userId);
                 expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
                 expect(res.body.error).toBe("Somente o(a) criador(a) pode excluir os comentários!");
             }
