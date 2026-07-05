@@ -21,15 +21,15 @@ jobs:
           node-version: "18"
 
       - name: Instalar dependências
-        run: npm install
+        run: npm ci
+        
+      - name: Gerar o Prisma
+        run: npx prisma generate
 
       - name: Rodar migrations Prisma
         env:
           DATABASE_URL: ${{ vars.DATABASE_URL }}
         run: npx prisma migrate deploy
-      
-      - name: Gerar o Prisma
-        run: npx prisma generate
 
       - name: Rodar testes
         run: npm test
