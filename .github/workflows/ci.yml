@@ -1,18 +1,3 @@
-Nicolas, agora sim dá pra ver claramente o que estava pegando no seu pipeline. 💙 O erro do Prisma Client nos testes acontece porque ele não está sendo gerado no momento certo ou não encontra o DATABASE_URL.
-
-📌 O que estava errado:
-
-    Ordem dos passos: você estava rodando generate antes de migrate deploy. Isso gera o client com base no schema antigo, e depois aplica migrations. O client pode ficar desatualizado.
-
-    Variáveis de ambiente: você só passava DATABASE_URL na etapa de migrations. Os testes também precisam dessa variável, senão o Prisma não inicializa.
-
-    Scripts locais: se alguém rodar npm test sem rodar generate antes, quebra. É melhor automatizar com "pretest": "prisma generate".
-
-    Dependências: garanta que @prisma/client está em dependencies e não em devDependencies.
-
-📌 Pipeline corrigido:
-yaml
-
 name: CI Pipeline
 
 on:
