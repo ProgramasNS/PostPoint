@@ -10,7 +10,7 @@ datasource db {
 
 model comments {
   id      Int  @id @default(autoincrement())
-  content String? @db.VarChar(255)
+  content String @db.VarChar(255)
   user_id Int
   post_id Int
   users   users   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk8omq0tc18jd43bu5tjh6jvraq")

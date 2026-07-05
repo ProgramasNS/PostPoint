@@ -1,0 +1,88 @@
+<h1>PostPoint</h1>
+<h2>O que é?</h2>
+<p>Trata-se de um conjunto de APIs REST para um blog desenvolvido principalmente na linguagem de programação TypeScript.</p>
+<h2>Tecnologias utilizadas</h2>
+<ul>
+    <li><strong>Express.js:</strong> Principal tecnologia, usada para a criação de APIs e requisições. Trata-se de um dos frameworks mais modernos e robustos para a criação de aplicações back-end;</li>
+    <li><strong>Prisma:</strong> A ORM mais popular do mercado back-end. Permite a criação de models através do próprio arquivo <code>schema.prisma</code> e é responsável diretamente pela criação de tabelas e interações com o banco de dados.</li>
+    <li><strong>PostgreSQL:</strong> Um dos SGBDs (Sistemas de Gerenciamento de Banco de Dados) mais populares baseados na linguagem SQL. É o próprio banco de dados da aplicação, o qual interage diretamente com o Prisma</li>
+    <li><strong>Jest:</strong> O principal responsável pelos testes automatizados, os quais garantem a qualidade constante do software e proteção contra bugs inesperados</li>
+    <li><strong>Docker:</strong> O responsável pela containerização da aplicação, a qual permite sua execução por meio de qualquer dispositivo através de um Dockerfile.</li>
+    <li><strong>BCrypt:</strong> O responsável por criptografar as senhas enviadas em cada requisição.</li>
+    <li><strong>Json Web Token (JWT):</strong> O principal responsável pela geração de tokens para a autenticação de usuários. Funciona por meio de uma chave secreta, a qual gera um token após o login do(a) usuário(a).</li>
+</ul>
+<h2>A padronização do código</h2>
+<p>O código deste projeto foi baseado nos princípios do <strong>Design Tolerante a Erros</strong>: cada requisição de cada API prevê várias falhas possíveis, como a não-inserção de dados obrigatórios na requisição e a inserção de dados inválidos. Além disso, o código é feito para ser de fácil leitura e entendimento, com comentários esclarecendo vários pontos importantes sobre o código.</p>
+<p>Além disso, o código é feito para ser prático e direto: O objeto HttpCodes, por exemplo, substitui números mágicos na hora de definir o <i>status code</i> de cada response. O código também é inteiramente composto por arrow functions, as quais facilitam a exportação e a legibilidade do código.</p>
+<h2>As models</h2>
+<p>As models da aplicação são definidas pelo Prisma através do arquivo <code>schema.prisma</code>. O schema possui três models, com cada uma correspondendo a uma tabela do banco de dados. São elas:</p>
+<h3>users</h3>
+<p>Esta model corresponde aos usuários da aplicação. Ela possui as seguintes propriedades: </p>
+<ul>
+    <li><strong>id:</strong> Propriedade única e inserida automaticamente após a criação de um user por meio do cadastro;</li>
+    <li><strong>nickname:</strong> Propriedade única. Trata-se do username de cada usuário, sendo uma propriedade obrigatória tanto no cadastro quanto no login.</li>
+    <li><strong>email:</strong> Propriedade única. Trata-se do e-mail correspondente a cada usuário(a). É obrigatório no cadastro, mas opcional no login.</li>
+    <li><strong>password:</strong> Corresponde à senha criptografada de cada usuário(a). É obrigatória tanto para o cadastro quanto para o login.</li>
+    <li><strong>profilePic:</strong> Propriedade opcional. Corresponde ao URL da foto de perfil do(a) usuário(a).</li>
+    <li><strong>posts:</strong> Corresponde aos posts do(a) usuário(a).</li>
+    <li><strong>comments:</strong> Corresponde aos comentários do(a) usuário(a).</li>
+</ul>
+<h3>posts</h3>
+<p>Essa model corresponde aos posts pertencentes ao blog.</p>
+<ul>
+    <li><strong>id:</strong> Propriedade única e inserida automaticamente a cada criação de um novo post.</li>
+    <li><strong>title:</strong> Propriedade opcional. Corresponde ao título do post, não necessariamente único. O valor padrão é "Post sem título".</li>
+    <li><strong>content:</strong> Propriedade obrigatória. Corresponde ao conteúdo do post. Deve possuir pelo menos 10 caracteres.</li>
+    <li><strong>user_id:</strong> Corresponde ao id do(a) criador(a) do post. Inserido automaticamente a cada post criado por um(a) usuário(a). Propriedade diretamente linkada à propriedade posts da model users.</li>
+    <li><strong>users:</strong> Corresponde diretamente ao(à) user criador(a) do post.</li>
+    <li><strong>createdAt:</strong> Corresponde à data de criação de um determinado post, definida por padrão como a data atual durante o momento da criação.</li>
+    <li><strong>updatedAt:</strong> Corresponde à data de atualização de um determinado post, também definida automaticamente como o momento atual durante a atualização.</li>
+    <li><strong>comments:</strong> Corresponde aos comentários pertencentes a um determinado post.</li>
+</ul>
+<h3>comments</h3>
+<p>Corresponde aos comentários. Cada comentário obrigatoriamente pertence a um determinado post.</p>
+<ul>
+    <li><strong>id:</strong> Propriedade única e inserida automaticamente a cada criação de comentário;</li>
+    <li><strong>content:</strong> Propriedade obrigatória. Corresponde ao conteúdo do comentário, o qual deve possuir pelo menos 10 caracteres;</li>
+    <li><strong>user_id:</strong> Corresponde ao id do(a) criador(a) do comentário. Inserido automaticamente após a criação de cada comentário.</li>
+    <li><strong>post_id:</strong> Corresponde ao id do post ao qual o comentário pertence. Inserido automaticamente após a criação de cada comentário.</li>
+    <li><strong>users:</strong> Corresponde diretamente ao(à) user criador(a) do comentário.</li>
+    <li><strong>posts:</strong> Corresponde diretamente ao post ao qual o comentário pertece.</li>
+</ul>
+<h2>A estrutura do projeto</h2>
+<p>O projeto utiliza o padrão <strong>Model-View-Controller (MVC)</strong>, cujas APIs utilizam-se principalmente das models e dos controllers. Quanto à organização, o projeto baseia-se no princípio da <strong>Separação de Responsabilidades</strong>(<i>Separation of Concerns</i>, em inglês), um dos pilares do Clean Code, no qual as partes mais importantes do projeto são divididas em diferentes pastas. Entre as pastas estão:</p>
+<h3>Controllers</h3>
+<p>Responsáveis pelas requisições feitas com as models. Dentre eles estão: </p>
+<ol>
+    <li><h4>UserController.ts</h4></li>
+    <p>Corresponde ao controller para a model users. Possui as funções cadastrarUsuário, método POST, o qual cadastra um(a) novo(a) user, login, também POST, o qual além de fazer login gera um token para autenticações JWT posteriores, e atualizarFoto, o qual é um método PUT que exige autenticação. Requisições obrigatórias: {nickname, email e password} para o cadastro e {nickname, password} para o login.</p>
+    <li><h4>PostController.ts</h4></li>
+    <p>Corresponde ao controller para a model posts. Possui um CRUD completo e funções extras para casos específicos. O método POST corresponde à função criarPost, sob o qual a autenticação é obrigatória (e inclusive possui prevenções para usuários não-autenticados); o método GET corresponde às funções listarPosts e listarPostsPorUsuario (o qual possui authorId como parâmetro nas routes); o método PUT corresponde à função atualizarPost, a qual requer autenticação e que o(a) usuário(a) autenticado(a) seja autor(a) do post; o método DELETE corresponde à função excluirComentário, a qual possui as mesmas exigências que a função do método PUT.</p>
+    <li><h4>CommentController.ts</h4></li>
+    <p>Corresponde ao controller para a model comments. Possui um CRUD completo e funções extras para casos específicos. O método POST corresponde à função criarComentario, a qual exige autenticação; o método GET corresponde às funções listarComentarios, listarComentariosPorUsuario, o qual possui userId como parâmetro nas routes, listarComentariosPorPost, o qual possui como parâmetro das routes postId; o método PUT corresponde à função atualizarComentario, a qual requer autenticação e que o(a) usuário(a) seja autor(a) do cometário; o método DELETE corresponde à função excluirComentário, com as mesmas exigências que a função do método PUT.</p>
+</ol>
+<h3>Middlewares</h3>
+<p>Corresponde à pasta dedicada à criação de tokens. Possui apenas o módulo exportado verificarToken, o qual é responsável por gerar e verificar autenticação JWT.</p>
+<h3>Routes</h3>
+<p>Corresponde à pasta dedicada às routes, as quais mapeiam as funções, os métodos e define quais funções necessitam de autenticação. Possui os arquivos: </p>
+<ol>
+    <li><strong>UserRoutes.ts:</strong> Define as routes e invoca os métodos do UserController;</li>
+    <li><strong>PostRoutes.ts:</strong> Define as routes e invoca os métodos do PostController;</li>
+    <li><strong>CommentRoutes.ts:</strong> Define as routes e invoca os métodos do CommentController.</li>
+    <p><strong>OBS:</strong> Para funções que exigem autenticação, a função "verificarToken" era o parâmetro de cada método POST, PUT e DELETE; para as funções GET, a autenticação está ausente.</p>
+</ol>
+<h3>db</h3>
+<p>Corresponde à pasta dedicada ao instanciamento do banco de dados, o qual é exportado como PrismaClient pelo único módulo da pasta: Database.ts. Esse PrismaClient é baseado no próprio schema gerado pelo Prisma, e é o meio pelo qual o banco de dados é invocado no código.</p>
+<h3>objects</h3>
+<p>Corresponde à pasta dedicada a um objeto específico: o objeto HttpCodes, o qual, conforme dito previamente, possui como atributos os códigos HTTP usados no projeto. O objeto é exportado pelo módulo Http.ts.</p>
+<h3>types</h3>
+<p>Sobrescreve o módulo Express de modo a colocar a propriedade userId. Possui o módulo express.d.ts.</p>
+<h3>github/workflows</h3>
+<p>Possui o ci.yml, o qual guarda as instruções para CI/CD.</p>
+<h3>prisma</h3>
+<p>Corresponde à pasta dedicada ao schema e às migrations do banco de dados.</p>
+<h2>Testes automatizados</h2>
+<p>Esta aplicação utiliza o módulo Jest. Ela possui testes unitários específicos para cada função do controller. Os testes dos controllers não os testam somente, mas também as routes e requisições. Os testes são guardados dentro da pasta tests, a qual é subpasta da pasta controllers.</p>
+<h3>Os edge cases</h3>
+<p>Conforme dito antes, a aplicação funciona baseada no Design Tolerante a Erros, e isso inclui os chamados "edge cases", sob os quais há um controle sobre todos os erros de requisição possíveis: os testes para edge cases induzem as funções propositalmente ao erro para verificar se os tais erros geram as requisições corretas. São feitos inúmeros testes para uma mesma função, de modo a cobrir o máximo de erros possíveis. Cada teste é documentado claramente por meio de comentários e descrições concisas.</p>
+

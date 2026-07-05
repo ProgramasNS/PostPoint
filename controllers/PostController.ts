@@ -45,6 +45,9 @@ export const listarPosts = async (req: Request, res: Response) => {
 export const listarPostsPorUser = async (req: Request, res: Response) => {
     try {
         const {userId} = req.params;
+        if(!userId) {
+            return res.status(HttpCodes.NOT_FOUND).json({error: "Usuário(a) não encontrado(a)!"});
+        }
         const postsdoUser = await db.posts.findMany({
             where: {user_id: Number(userId)}, include: {
             users: {

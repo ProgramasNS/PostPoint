@@ -96,6 +96,15 @@ describe('Testes para comentários', () => {
                 });
             }
         )
+        //Função edge cases correspondente a "listarComentariosPorUsuario" (caso o usuário(a) não exista)
+        test(
+            'Verificar se user existe', async () => {
+                const userId = 999999999;
+                const res = await request(app).get(`/${userId}`);
+                expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
+                expect(res.body.error).toBe("Usuário(a) não encontrado(a)!");
+            }
+        )
       }
     )
     //Função correspondente a "listarComentariosPorPost"
@@ -109,6 +118,15 @@ describe('Testes para comentários', () => {
                 commentsPost.forEach((comment: any) => {
                     expect(comment.post_id).toBe(postId);
                 })
+            }
+        )
+        //Função edge cases correspondente a "listarComentariosPorPost"
+        test(
+            'Verificar se post existe', async () => {
+                const postId = 99999999;
+                const res = await request(app).get(`/post/${postId}`);
+                expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
+                expect(res.body.error).toBe("Post não encontrado!");
             }
         )
     }

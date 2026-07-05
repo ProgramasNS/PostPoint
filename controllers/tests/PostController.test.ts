@@ -72,7 +72,11 @@ describe(
                 expect(Array.isArray(posts)).toBe(true);
             }
         )
-        //Função correspondente a listarPostsPorUsuario
+    }
+);
+
+describe('GET /author/:authorId', () => {
+     //Função correspondente a listarPostsPorUsuario
         test(
             'Listar os posts de um usuário específico', async () => {
                 const authorId = 1;
@@ -84,8 +88,18 @@ describe(
                 });
             }
         );
+        
+        //Função edge cases correspondente a listarPostsPorUsuario (caso o(a) usuário(a) não exista)
+        test(
+            'Verificando se usuário(a) existe', async () => {
+                const authorId = 99999;
+                const res = await request(app).get(`/author/${authorId}`);
+                expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
+                expect(res.body.error).toBe("Usuário(a) não encontrado(a)!");
+            }
+        )
     }
-);
+)
 
 //Função correspondente a "atualizarPost"
 describe(

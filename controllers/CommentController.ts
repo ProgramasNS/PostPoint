@@ -55,6 +55,12 @@ export const listarComentarios = async (req: Request, res: Response) => {
 export const listarComentariosPorUsuario = async (req: Request, res: Response) => {
     try {
         const {authorId} = req.params;
+        const author = await db.users.findUnique({
+            where: {id: Number(authorId)}
+        })
+        if (!author) {
+            return res.status(HttpCodes.NOT_FOUND).json({error: "Usuário(a) não encontrado(a)!"})
+        }
         const comentAutor = await db.comments.findMany(
             {
                 where: {user_id: Number(authorId)}
@@ -70,6 +76,12 @@ export const listarComentariosPorUsuario = async (req: Request, res: Response) =
 export const listarComentariosPorPost = async (req: Request, res: Response) => {
     try {
         const {postId} = req.params;
+        const post = await db.posts.findUnique({
+            where: {id: Number(postId)}
+        });
+        if (!post) {
+            return res.status(HttpCodes.NOT_FOUND).json({error: "Post não encontrado!"});
+        }
         const comentarios = await db.comments.findMany({
             where: {post_id: Number(postId)}
         });
