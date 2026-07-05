@@ -173,9 +173,7 @@
                 <td>/api/user/new</td>
                 <td>Cadastra novo(a) usuário(a)</td>
                 <td>
-                    <pre>
-                        <code>{"nickname": "Fulano de tal", "email": "fulano@example.com", "password": "Senha de teste"}</code>
-                    </pre>
+                  {"nickname": "Fulano de tal", "email": "fulano@example.com", "password": "Senha de teste"}
                 </td>
             </tr>
             <tr>
@@ -183,9 +181,7 @@
                 <td>/api/user/login</td>
                 <td>Método para fazer login e gerar tokens de autenticação</td>
                 <td>
-                    <pre>
-                        <code>{"nickname": "Fulano de tal", "password": "Senha de teste"}</code>
-                    </pre>
+                    {"nickname": "Fulano de tal", "password": "Senha de teste"}
                 </td>
             </tr>
             <tr>
@@ -193,9 +189,7 @@
                 <td>/api/user/photo</td>
                 <td>Permite ao(à) usuário(a) trocar sua foto de perfil (somente usuários autenticados)</td>
                 <td>
-                    <pre>
-                        <code>{"url": "https://www.shutterstock.com/image-vector/inventory-icon-stock-product-catalog-600w-2707791441.jpg"}</code>
-                    </pre>
+                    {"url": "https://www.shutterstock.com/image-vector/inventory-icon-stock-product-catalog-600w-2707791441.jpg"}
                 </td>
             </tr>
             <tr>
@@ -203,9 +197,7 @@
                 <td>/api/post/new</td>
                 <td>Cria novos posts (somente usuários autenticados)</td>
                 <td>
-                    <pre>
-                        <code>{"title": "Título de teste", "content": "Conteúdo de teste"}</code>
-                    </pre>
+                   {"title": "Título de teste", "content": "Conteúdo de teste"}
                 </td>
             </tr>
             <tr>
@@ -225,9 +217,7 @@
                 <td>/api/post/:postId (substitua o ":postId" pelo número do ID de algum post que você criou)</td>
                 <td>Atualiza um post (somente usuários autenticados e que sejam autores do post desejado)</td>
                 <td>
-                    <pre>
-                        <code>{"title": "Novo título", "content": "Inserindo novo conteúdo"}</code>
-                    </pre>
+                  {"title": "Novo título", "content": "Inserindo novo conteúdo"}
                 </td>
             </tr>
             <tr>
@@ -241,9 +231,7 @@
                 <td>/api/post/comment/:postId/new (substitua o ":postId" pelo id de qualquer post, tenha você criado ou não)</td>
                 <td>Cria um novo comentário em um determinado post (somente usuários autenticados)</td>
                 <td>
-                    <pre>
-                        <code>{"content": "Conteúdo de teste"}</code>
-                    </pre>
+                    {"content": "Conteúdo de teste"}
                 </td>
             </tr>
             <tr>
@@ -269,9 +257,7 @@
                 <td>/api/post/comment/:postId/:commentId (substitua ":postId" pelo id de algum post, seja ele de sua autoria ou não, e substitua ":commentId", pelo id de um comentário obrigatoriamente de sua autoria).</td>
                 <td>Atualiza o comentário de um determinado post (somente usuários autenticados e usuários que são autores do comentário)</td>
                 <td>
-                    <pre>
-                        <code>{"content": "Novo conteúdo atualizado"}</code>
-                    </pre>
+                    {"content": "Novo conteúdo atualizado"}
                 </td>
             </tr>
             <tr>
