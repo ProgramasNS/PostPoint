@@ -9,7 +9,7 @@ export const criarPost = async (req: Request, res: Response) => {
         const {title,  content} = req.body;
         let tituloReserva = title?title:'Post Sem Título'; //O título padrão para todos os posts é "Post Sem Título"
         if (!userId) {
-            return res.status(HttpCodes.FORBIDDEN).json({error: "Você não está autenticado(a)!"});
+            return res.status(HttpCodes.UNAUTHORIZED).json({error: "Você não está autenticado(a)!"});
         }
         if (!content || content.length < 10) {
             return res.status(HttpCodes.BAD_REQUEST).json({error: "São necessários posts de pelo menos 10 caracteres!"});
@@ -77,7 +77,7 @@ export const atualizarPost = async (req: Request, res: Response) => {
             return res.status(HttpCodes.NOT_FOUND).json({error: 'Post não encontrado!'});
         }
         if (userId !== post?.user_id) {
-            return res.status(HttpCodes.UNAUTHORIZED).json({error: "Somente o(a) criador(a) do post pode atualizá-lo!"});
+            return res.status(HttpCodes.FORBIDDEN).json({error: "Somente o(a) criador(a) do post pode atualizá-lo!"});
         }
         const postAtualizado = await db.posts.update({
             where: {id: Number(postId)},
@@ -106,7 +106,7 @@ export const excluirPost = async (req: Request, res: Response) => {
             return res.status(HttpCodes.NOT_FOUND).json({error: "Post não encontrado!"});
         }
         if (userId !== postExcluido?.user_id) {
-            return res.status(HttpCodes.UNAUTHORIZED).json({error: "Somente o(a) criador(a) do post pode excluí-lo!"});
+            return res.status(HttpCodes.FORBIDDEN).json({error: "Somente o(a) criador(a) do post pode excluí-lo!"});
         }
         await db.posts.delete({
             where: {id: Number(postId)}

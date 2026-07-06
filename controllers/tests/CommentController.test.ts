@@ -6,9 +6,11 @@ import { PrismaClient } from '../../generated/prisma';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt'
 import { ClientRequest } from 'http';
+import {userFalso, tokenFalso} from '../../objects/fakeUser'
 
 const client = new PrismaClient();
 const content = {user_id: 1, content: 'Conteúdo para testes'}
+
 const token = async (userId: number = 1) => {
     const payload = { 
         userId: userId,
@@ -21,15 +23,24 @@ const token = async (userId: number = 1) => {
     );
     return token;
 };
+
+//Token feito especificamente para o user falso para gerar uma falsa autenticação
+
 let authToken: string;
+let fakeToken: string;
+let fakeUser: any;
 
 describe('Testes para comentários', () => {
     beforeAll(
         async () => {
         authToken = await token();
+        fakeToken = await tokenFalso();
+        fakeUser = await userFalso();
+        //Excluindo os dados anteriores para não dar sobreposição
         await client.comments.deleteMany();
         await client.posts.deleteMany();
         await client.users.deleteMany();
+        //Criando novos dados
         await client.users.create({
             data: {
                 id: 1,
@@ -38,6 +49,11 @@ describe('Testes para comentários', () => {
                 password: await bcrypt.hash('Senha super segura', 10)
             }
         });
+        await client.users.create(
+            {
+                data: fakeUser
+            }
+        )
         await client.posts.create({
             data: {
                 id: 1,
@@ -148,7 +164,7 @@ describe('Testes para comentários', () => {
       }
     )
     //Função correspondente a "listarComentariosPorPost"
-    describe('/post/:postId', () => {
+    describe('GET /post/:postId', () => {
         test(
             'Deve retornar os comentários de um determinado post', async () => {
                 const postId = 1;
@@ -160,10 +176,10 @@ describe('Testes para comentários', () => {
                 })
             }
         )
-        //Função edge cases correspondente a "listarComentariosPorPost"
+        //Função edge cases correspondente a "listarComentariosPorPost" (caso o post não exista)
         test(
             'Verificar se post existe', async () => {
-                const postId = 99999999;
+                const postId = 0;
                 const res = await request(app).get(`/api/post/comment/post/${postId}`);
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe("Post não encontrado!");
@@ -201,11 +217,9 @@ describe('Testes para comentários', () => {
         //Função edge cases correspondente a "atualizarComentario" (caso o(a) usuário(a) não seja criador(a) do comentário)
         test(
             'Verificar se o(a) usuário(a) é autor(a) do comentário', async () => {
-                const userId = 9999;
                 const postId = 1;
                 const commentId = 1;
-                const content = {post_id: postId, id: commentId, content: 'Conteúdo para testes'};
-                const res = await request(app).put(`/api/post/comment/${postId}/${commentId}`).send(content);
+                const res = await request(app).put(`/api/post/comment/${postId}/${commentId}`).send({content: 'Novo conteúdo'}).set('Authorization', `Bearer ${fakeToken}`);
                 expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
                 expect(res.body.error).toBe("Somente o(a) criador(a) do post pode editá-lo!");
           }
@@ -235,11 +249,9 @@ describe('Testes para comentários', () => {
         //Função edge cases correspondente a "excluirComentario" (caso o(a) usuário(a) não seja autor(a) do comentário)
         test(
             'Verificando se o(a) usuário(a) é autor(a) do comentário',  async () => {
-                const userId = 9999;
                 const postId = 1;
                 const commentId = 1;
-                const res = await request(app).delete(`/api/post/comment/${postId}/${commentId}`);
-                expect(Number(res.body.user_id)).toBe(userId);
+                const res = await request(app).delete(`/api/post/comment/${postId}/${commentId}`).set('Authorization', `Bearer ${fakeToken}`);
                 expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
                 expect(res.body.error).toBe("Somente o(a) criador(a) pode excluir os comentários!");
             }

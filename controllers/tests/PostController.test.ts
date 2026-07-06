@@ -4,7 +4,7 @@ import app from "../../app";
 import HttpCodes from "../../objects/Http";
 import { PrismaClient } from '../../generated/prisma';
 import verificarToken from "../../middlewares/auth";
-import {Request, Response} from 'express';
+import {userFalso, tokenFalso} from '../../objects/fakeUser'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -28,10 +28,20 @@ const token = async (userId: number = 1) => {
 
 const client = new PrismaClient();
 let authToken: string;
+let fakeToken: string;
+let fakeUser: any;
 describe('Testes para posts', () => {
 
 beforeAll(async () => {
+    //Apagando os dados dos testes anteriores para não gerar sobreposição
+    await client.comments.deleteMany();
+    await client.posts.deleteMany();
+    await client.users.deleteMany();
+
     authToken = await token();
+    fakeUser = await userFalso();
+    fakeToken = await tokenFalso();
+    
     // Criar dados de teste
     await client.users.create({
         data: {
@@ -41,6 +51,9 @@ beforeAll(async () => {
             password: await bcrypt.hash("senha_hash_aqui", 10)
         }
     });
+    await client.users.create({
+        data: fakeUser
+    })
     await client.posts.create({
         data: {
             id: 1,
@@ -50,11 +63,12 @@ beforeAll(async () => {
             createdAt: new Date()
         }
     });
+
 });
     afterAll(async () => {
+        await client.comments.deleteMany();
         await client.posts.deleteMany();
         await client.users.deleteMany();
-        await client.comments.deleteMany();
         await client.$disconnect();
     })
     //Função correspondente a "criarPost"
@@ -76,7 +90,7 @@ beforeAll(async () => {
                     const userId = 0;
                     let contentCopia = {...content, user_id: userId};
                     const res = await request(app).post('/api/post/new').send(contentCopia);
-                    expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
+                    expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
                     expect(res.body.user_id).toBe(userId);
                     expect(res.body.error).toBe("Você não está autenticado(a)!");
                 }
@@ -159,12 +173,9 @@ describe(
         //Função para edge cases correspondente a "atualizarPost" (caso o(a) usuário(a) não tenha criado o post)
         test(
             'Deve retornar "UNAUTHORIZED" caso o(a) usuário(a) não seja o(a) criador(a) do post', async () => {
-                const userId = 9999;
                 const postId = 1;
-                const title = "Titulo de teste";
-                const content = "Conteudo de teste";
-                const res = await request(app).put(`/api/post/${postId}`).send({user_id: userId, post_id: postId, title, content});
-                expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
+                const res = await request(app).put(`/api/post/${postId}`).send({content: 'Novo conteúdo'}).set('Authorization', `Bearer ${fakeToken}`);
+                expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
                 expect(res.body.error).toBe("Somente o(a) criador(a) do post pode atualizá-lo!");
             }
         );
@@ -193,10 +204,9 @@ describe(
         //Função para edge cases correspondente a "excluirPost" (caso o(a) usuário(a) não seja autor(a) do post)
         test(
             'Verifica se o(a) usuário(a) é autor(a) do post', async () => {
-                const userId = 0;
                 const postId = 1;
-                const res = await request(app).delete(`/api/post/${postId}`);
-                expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
+                const res = await request(app).delete(`/api/post/${postId}`).set('Authorization', `Bearer ${fakeToken}`);
+                expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
                 expect(res.body.error).toBe('Somente o(a) criador(a) do post pode excluí-lo!');
             }
         );

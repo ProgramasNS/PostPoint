@@ -25,6 +25,7 @@ describe('Testes para users', () => {
     beforeAll(
         async () => {
         authToken = await token();
+        //Excluindo dados anteriores 
         await client.comments.deleteMany();
         await client.posts.deleteMany();
         await client.users.deleteMany();
