@@ -7,23 +7,40 @@ import { PrismaClient } from '../../generated/prisma';
 import jwt from 'jsonwebtoken';
 
 const client = new PrismaClient();
-const token = async () => {
-    const token = await jwt.sign(
-        {url: "https://media.istockphoto.com/id/1980276924/vector/no-photo-thumbnail-graphic-element-no-found-or-available-image-in-the-gallery-or-album-flat.jpg"}, 
+const token = async (userId: number = 1) => {
+    const payload = { 
+        userId: userId,
+        nickname: "Usuário de teste"
+    };
+    const token = jwt.sign(
+        payload, 
         process.env.JWT_SECRET || "Meu segredo muito secreto",
         {expiresIn: '7d'}
-    )
+    );
     return token;
-}
+};
+let authToken: string;
 let hashSenhaUniversal = "Senha super segura"
 describe('Testes para users', () => {
     beforeAll(
-        async() => {
-            await token();
-            hashSenhaUniversal = await bcrypt.hash(hashSenhaUniversal, 10);
+        async () => {
+        authToken = await token();
+        await client.comments.deleteMany();
+        await client.posts.deleteMany();
+        await client.users.deleteMany();
+        await client.users.create({
+            data: {
+                id: 1,
+                nickname: "Usuário de teste",
+                email: "teste@testmail.com",
+                password: await bcrypt.hash(hashSenhaUniversal, 10)
+            }
+        });
         }
     )
     afterAll(async () => {
+        await client.comments.deleteMany();
+        await client.posts.deleteMany();
         await client.users.deleteMany();
         await client.$disconnect();
     })
@@ -88,7 +105,7 @@ describe('Testes para users', () => {
             //Função correspondente a "login"
             test(
                 'Fazendo login de novo usuário', async () => {
-                    const content = {nickname: 'Usuário de teste', password: "Senha super segura"}
+                    const content = {nickname: 'Usuário de teste', password: hashSenhaUniversal}
                     const res = await request(app).post('/api/user/login').send(content);
                     expect(res.statusCode).toBe(HttpCodes.OK);
                 }
@@ -98,7 +115,7 @@ describe('Testes para users', () => {
                 'Verificando se nickname existe', async () => {
                     const content = {nickname: "Nick para testes", password: "Senha super segura"}
                     const res = await request(app).post('/api/user/login').send(content);
-                    expect(res.body.user_id).toBe(null);
+                    expect(res.body.user_id).toBe(undefined);
                     expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                     expect(res.body.error).toBe("Usuário(a) não existe!");
                 }
@@ -106,7 +123,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "login" (caso a senha esteja errada)
             test(
                 'Verificando se a senha está correta', async () => {
-                    const content = {nickname: 'User de teste', password: hashSenhaUniversal}; //Todas as senhas são criptografadas; essa senha passaria por dupla criptografia, impossibilitando a comparação com o usuário já existente. Portanto, está sempre incorreta
+                    const content = {nickname: 'Usuário de teste', password: 'Senha propositalmente errada'}; 
                     const res = await request(app).post('/api/user/login').send(content);
                     expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
                     expect(res.body.error).toBe('Senha incorreta!');
@@ -126,7 +143,7 @@ describe('Testes para users', () => {
                     const content = {nickname: 'Usuário de teste'};
                     const res = await request(app).post('/api/user/login').send(content);
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
-                    expect(res.body.password).toBe(null);
+                    expect(res.body.error).toBe("Todos os campos são obrigatórios!");
                 }
             )
             //Função edge cases correspondente a "login" (caso o login não gere um token)
@@ -144,16 +161,16 @@ describe('Testes para users', () => {
             //Função correspondente a "atualizarFoto"
             test(
                 'Atualizando a foto de perfil', async () => {
-                    const res = await request(app).put('/api/user/photo').set('Authorization', `Bearer ${await token()}`).send({url: 'https://media.istockphoto.com/id/1980276924/vector/no-photo-thumbnail-graphic-element-no-found-or-available-image-in-the-gallery-or-album-flat.jpg'});
+                    const res = await request(app).put('/api/user/photo').set('Authorization', `Bearer ${authToken}`).send({url: 'https://media.istockphoto.com/id/1980276924/vector/no-photo-thumbnail-graphic-element-no-found-or-available-image-in-the-gallery-or-album-flat.jpg'});
                     expect(res.statusCode).toBe(HttpCodes.OK);
                 }
             )
             //Função edge cases correspondente a "atualizarFoto" (caso o url esteja vazio)
             test(
                 'Verificando se url foi enviado', async () => {
-                    const res = await request(app).put('/api/user/photo').set('Authorization', `Bearer ${await token()}`).send({url: ""});
+                    const res = await request(app).put('/api/user/photo').set('Authorization', `Bearer ${authToken}`).send({url: ""});
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
-                    expect(res.body.error).toBe("É necessário estar autenticado(a) para atualizar a foto de perfil!");
+                    expect(res.body.error).toBe("É obrigatório adicionar o endereço da imagem!");
                 }
             )
             //Função edge cases correspondente a "atualizarFoto" (caso o(a) usuário(a) não seja autenticado(a))
@@ -168,7 +185,7 @@ describe('Testes para users', () => {
             test(
                 'Verificando se URL é válido', async () => {
                     const url = "urlinvalida.com";
-                    const res = await request(app).put('/api/user/photo').send({url});
+                    const res = await request(app).put('/api/user/photo').set("Authorization", `Bearer ${authToken}`).send({url});
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
                     expect(res.body.error).toBe("Insira uma imagem válida!");
                 }

@@ -4,24 +4,65 @@ import app from '../../app';
 import { describe, it, test, expect, afterAll, beforeAll} from '@jest/globals';
 import { PrismaClient } from '../../generated/prisma';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt'
+import { ClientRequest } from 'http';
 
 const client = new PrismaClient();
 const content = {user_id: 1, content: 'Conteúdo para testes'}
-const token = async () => {
-    const token = await jwt.sign(
-        content, 
+const token = async (userId: number = 1) => {
+    const payload = { 
+        userId: userId,
+        nickname: "Usuário de teste"
+    };
+    const token = jwt.sign(
+        payload, 
         process.env.JWT_SECRET || "Meu segredo muito secreto",
         {expiresIn: '7d'}
-    )
+    );
     return token;
-}
+};
+let authToken: string;
 
 describe('Testes para comentários', () => {
     beforeAll(
-        async () => await token()
+        async () => {
+        authToken = await token();
+        await client.comments.deleteMany();
+        await client.posts.deleteMany();
+        await client.users.deleteMany();
+        await client.users.create({
+            data: {
+                id: 1,
+                nickname: "Usuário de teste",
+                email: "teste@testmail.com",
+                password: await bcrypt.hash('Senha super segura', 10)
+            }
+        });
+        await client.posts.create({
+            data: {
+                id: 1,
+                title: "Título de teste",
+                content: "Conteúdo de teste com mais de 10 caracteres",
+                user_id: 1,
+            }
+        });
+        await client.comments.create(
+            {
+                data: {
+                    id: 1,
+                    content: 'Conteúdo de teste',
+                    user_id: 1,
+                    post_id: 1
+        
+                }
+            }
+        )
+     }
     )
     afterAll(async () => {
         await client.comments.deleteMany();
+        await client.posts.deleteMany();
+        await client.users.deleteMany();
         await client.$disconnect();
     });
     describe(
@@ -30,7 +71,7 @@ describe('Testes para comentários', () => {
             test("Deve criar um novo comentário", async () => {
                 const postId = 1;
                 const content = "Conteúdo de teste";
-                const res = await request(app).post(`/api/post/comment/${postId}/new`).set('Authorization', `Bearer ${await token()}`).send({content});
+                const res = await request(app).post(`/api/post/comment/${postId}/new`).set('Authorization', `Bearer ${authToken}`).send({content});
                 expect(res.statusCode).toBe(HttpCodes.CREATED);
                 expect(res.body.content).toBe(content);
             
@@ -39,7 +80,7 @@ describe('Testes para comentários', () => {
             test(
                 'Verificar se conteúdo tem mais de 10 caracteres', async () => {
                     const postId = 1;
-                    const res = await request(app).post(`/api/post/comment/${postId}/new`).set('Authorization', `Bearer ${await token()}`).send({content: ''});
+                    const res = await request(app).post(`/api/post/comment/${postId}/new`).set('Authorization', `Bearer ${authToken}`).send({content: ''});
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
                     expect(res.body.error).toBe("Comentários precisam de pelo menos 10 caracteres!");
                 }
@@ -49,7 +90,7 @@ describe('Testes para comentários', () => {
                 'Verifica se o(a) usuário(a) é autenticado(a)', async () => {
                     const userId = 0;
                     const postId = 1;
-                    const contentLocal = {title: "Título de teste", content: "Conteúdo de teste", user_id: userId};
+                    const contentLocal = { content: "Conteúdo de teste", user_id: userId};
                     const res = await request(app).post(`/api/post/comment/${postId}/new`).send(contentLocal);
                     expect(Number(res.body.user_id)).toBe(userId);
                     expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
@@ -62,7 +103,7 @@ describe('Testes para comentários', () => {
                     const postId = 0;
                     const commentId = 1;
                     const contentLocal = {post_id: postId, id: commentId, content: "Conteúdo de teste"};
-                    const res = await request(app).post(`/api/post/comment/${postId}/new`).set('Authorization', `Bearer ${await token()}`).send(contentLocal);
+                    const res = await request(app).post(`/api/post/comment/${postId}/new`).set('Authorization', `Bearer ${authToken}`).send(contentLocal);
                     expect(Number(res.body.post_id)).toBe(postId);
                     expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                     expect(res.body.error).toBe("Post não encontrado!");
@@ -138,7 +179,7 @@ describe('Testes para comentários', () => {
                 const postId = 1;
                 const commentId = 1;
                 const contentLocal = "Conteúdo de teste";
-                const res = await request(app).put(`/api/post/comment/${postId}/${commentId}`).set('Authorization', `Bearer ${await token()}`).send({
+                const res = await request(app).put(`/api/post/comment/${postId}/${commentId}`).set('Authorization', `Bearer ${authToken}`).send({
                    content: contentLocal
                 });
                 expect(res.statusCode).toBe(HttpCodes.OK);
@@ -151,7 +192,7 @@ describe('Testes para comentários', () => {
                 const postId = 1;
                 const commentId = 0;
                 const content = {post_id: postId, id: commentId, content: "Conteúdo de teste"}
-                const res = await request(app).put(`/api/post/comment/${postId}/${commentId}`).send(content).set('Authorization', `Bearer ${await token()}`);
+                const res = await request(app).put(`/api/post/comment/${postId}/${commentId}`).send(content).set('Authorization', `Bearer ${authToken}`);
                 expect(Number(res.body.comment_id)).toBe(commentId);
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe("Comentário não encontrado!");
@@ -177,7 +218,7 @@ describe('Testes para comentários', () => {
             'O comentário deve ser excluído', async () => {
                 const postId = 1;
                 const commentId = 1;
-                const res = await request(app).delete(`/api/post/comment/${postId}/${commentId}`).set('Authorization', `Bearer ${await token()}`);
+                const res = await request(app).delete(`/api/post/comment/${postId}/${commentId}`).set('Authorization', `Bearer ${authToken}`);
                 expect(res.statusCode).toBe(HttpCodes.OK);
             }
         )
@@ -185,8 +226,8 @@ describe('Testes para comentários', () => {
         test(
             'Verificando se o comentário existe', async () => {
                 const postId = 1;
-                const commentId = null;
-                const res = await request(app).delete(`/api/post/comment/${postId}/${commentId}`).set('Authorization', `Bearer ${await token()}`);
+                const commentId = 0;
+                const res = await request(app).delete(`/api/post/comment/${postId}/${commentId}`).set('Authorization', `Bearer ${authToken}`);
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe("Comentário não encontrado!");
             }

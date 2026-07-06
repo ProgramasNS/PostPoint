@@ -5,27 +5,56 @@ import HttpCodes from "../../objects/Http";
 import { PrismaClient } from '../../generated/prisma';
 import verificarToken from "../../middlewares/auth";
 import {Request, Response} from 'express';
+import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const content = {title: "Título de teste", content: "Conteúdo de teste", date: new Date(), user_id: 1};
+const content = {title: "Título de teste", content: "Conteúdo de teste",  user_id: 1};
 
-const token = async () => {
-    const token = await jwt.sign(
-        content, 
+const token = async (userId: number = 1) => {
+    const payload = { 
+        userId: userId,
+        nickname: "Usuário de teste"
+    };
+    const token = jwt.sign(
+        payload, 
         process.env.JWT_SECRET || "Meu segredo muito secreto",
         {expiresIn: '7d'}
-    )
+    );
     return token;
-}
-const client = new PrismaClient();
+};
 
+const client = new PrismaClient();
+let authToken: string;
 describe('Testes para posts', () => {
-    beforeAll(async () => await token())
+
+beforeAll(async () => {
+    authToken = await token();
+    // Criar dados de teste
+    await client.users.create({
+        data: {
+            id: 1,
+            nickname: "Usuário de teste",
+            email: "teste@testmail.com",
+            password: await bcrypt.hash("senha_hash_aqui", 10)
+        }
+    });
+    await client.posts.create({
+        data: {
+            id: 1,
+            title: "Título de teste",
+            content: "Conteúdo de teste com mais de 10 caracteres",
+            user_id: 1,
+            date: new Date()
+        }
+    });
+});
     afterAll(async () => {
         await client.posts.deleteMany();
+        await client.users.deleteMany();
+        await client.comments.deleteMany();
         await client.$disconnect();
     })
     //Função correspondente a "criarPost"
@@ -34,7 +63,7 @@ describe('Testes para posts', () => {
             test(
                 'Criando novo post', async () => {
                     const userId = 1;
-                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${await token()}`).send(content);
+                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${authToken}`).send(content);
                     expect(res.body.content).toBe(content.content);
                     expect(res.body.title).toBe(content.title);
                     expect(res.body.user_id).toBe(content.user_id);
@@ -45,8 +74,7 @@ describe('Testes para posts', () => {
             test(
                 'Deve retornar "FORBIDDEN" caso o(a) usuário(a) não seja autenticado(a)', async () => {
                     const userId = 0;
-                    let contentCopia = content;
-                    contentCopia.user_id = userId;
+                    let contentCopia = {...content, user_id: userId};
                     const res = await request(app).post('/api/post/new').send(contentCopia);
                     expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
                     expect(res.body.user_id).toBe(userId);
@@ -56,7 +84,7 @@ describe('Testes para posts', () => {
             //Função para edge cases correspondente a "criarPost" (caso o post tenha menos de 10 caracteres)
             test(
                 'Verificar se post possui menos de 10 caracteres', async () => {
-                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${await token()}`).send({content: ''}); 
+                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${authToken}`).send({content: ''}); 
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
                     expect(res.body.error).toBe("São necessários posts de pelo menos 10 caracteres!");
                 }
@@ -113,7 +141,7 @@ describe(
                 const postId = 1;
                 const title = "Titulo de teste";
                 const contentLocal = "Conteúdo de teste";
-                const res = await request(app).put(`/api/post/${postId}`).send({title, content: contentLocal}).set('Authorization', `Bearer ${await token()}`);
+                const res = await request(app).put(`/api/post/${postId}`).send({title, content: contentLocal}).set('Authorization', `Bearer ${authToken}`);
                 expect(res.statusCode).toBe(HttpCodes.OK);
                 expect(res.body.title).toBe(title);
                 expect(res.body.content).toBe(contentLocal);
@@ -123,7 +151,7 @@ describe(
         test(
             'Deve retornar "Not Found" caso o post não exista', async () => {
                 const postId = 0;
-                const res = await request(app).put(`/api/post/${postId}`).set('Authorization', `Bearer ${await token()}`).send({title: "Titulo de teste", content: "Conteúdo de teste"});
+                const res = await request(app).put(`/api/post/${postId}`).set('Authorization', `Bearer ${authToken}`).send({title: "Titulo de teste", content: "Conteúdo de teste"});
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe('Post não encontrado!');
             }
@@ -149,7 +177,7 @@ describe(
         test(
             'Apagando um post', async () => {
                 const postId = 1;
-                const res = await request(app).delete(`/api/post/${postId}`).set('Authorization', `Bearer ${await token()}`);
+                const res = await request(app).delete(`/api/post/${postId}`).set('Authorization', `Bearer ${authToken}`);
                 expect(res.statusCode).toBe(HttpCodes.OK);
             }
         )
@@ -157,7 +185,7 @@ describe(
         test(
             'Verificar se post existe antes de excluir', async () => {
                 const postId = 0;
-                const res = await request(app).delete(`/api/post/${postId}`).set('Authorization', `Bearer ${await token()}`);
+                const res = await request(app).delete(`/api/post/${postId}`).set('Authorization', `Bearer ${authToken}`);
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe("Post não encontrado!");
             }
