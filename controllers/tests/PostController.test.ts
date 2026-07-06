@@ -47,7 +47,7 @@ beforeAll(async () => {
             title: "Título de teste",
             content: "Conteúdo de teste com mais de 10 caracteres",
             user_id: 1,
-            date: new Date()
+            createdAt: new Date()
         }
     });
 });
