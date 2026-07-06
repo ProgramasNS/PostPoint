@@ -45,7 +45,6 @@ beforeAll(async () => {
     // Criar dados de teste
     await client.users.create({
         data: {
-            id: 1,
             nickname: "Usuário de teste",
             email: "teste@testmail.com",
             password: await bcrypt.hash("senha_hash_aqui", 10)
@@ -56,7 +55,6 @@ beforeAll(async () => {
     })
     await client.posts.create({
         data: {
-            id: 1,
             title: "Título de teste",
             content: "Conteúdo de teste com mais de 10 caracteres",
             user_id: 1,

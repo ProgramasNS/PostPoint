@@ -43,7 +43,6 @@ describe('Testes para comentários', () => {
         //Criando novos dados
         await client.users.create({
             data: {
-                id: 1,
                 nickname: "Usuário de teste",
                 email: "teste@testmail.com",
                 password: await bcrypt.hash('Senha super segura', 10)
@@ -56,7 +55,6 @@ describe('Testes para comentários', () => {
         )
         await client.posts.create({
             data: {
-                id: 1,
                 title: "Título de teste",
                 content: "Conteúdo de teste com mais de 10 caracteres",
                 user_id: 1,
@@ -65,7 +63,6 @@ describe('Testes para comentários', () => {
         await client.comments.create(
             {
                 data: {
-                    id: 1,
                     content: 'Conteúdo de teste',
                     user_id: 1,
                     post_id: 1
