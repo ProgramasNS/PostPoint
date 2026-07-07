@@ -28,7 +28,7 @@ export class uniqueUser  {
 
     private async generate(): Promise<any> {
         const random = Math.floor(1 + Math.random() * 99999999999);
-        this.nickname = `Usuário ${Date.now()}`;
+        this.nickname = `Usuário_${random}_${Date.now()}`;
         this.email = `email${random}${Date.now()}@mail.com`;
         this.profilePic = '';
         
