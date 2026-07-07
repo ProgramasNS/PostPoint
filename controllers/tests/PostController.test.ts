@@ -52,10 +52,11 @@ beforeAll(async () => {
         'POST /api/post/new', () => {
             test(
                 'Criando novo post', async () => {
-                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${authToken}`).send({title: 'Título de post inexistente', content: 'Conteúdo totalmente novo'});
-                    expect(res.body.content).toBe(newPost.content);
-                    expect(res.body.title).toBe(newPost.title);
-                    expect(res.body.user_id).toBe(newPost.user_id);
+                    const content = {title: 'Título de post inexistente', content: 'Conteúdo totalmente novo', user_id: newUser.id}
+                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${authToken}`).send();
+                    expect(res.body.content).toBe(content.content);
+                    expect(res.body.title).toBe(content.title);
+                    expect(res.body.user_id).toBe(content.user_id);
                     expect(res.statusCode).toBe(HttpCodes.CREATED);
                 }
             )
