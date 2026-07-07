@@ -15,9 +15,7 @@ export const criarPost = async (req: Request, res: Response) => {
             return res.status(HttpCodes.BAD_REQUEST).json({error: "São necessários posts de pelo menos 10 caracteres!"});
         }
         const newPost = await db.posts.create({
-            data: {title: tituloReserva, content, createdAt: new Date(), users: {
-                connect: {id: userId}
-            }}
+            data: {title: tituloReserva, content, createdAt: new Date(), user_id: userId}
         });
         return res.status(HttpCodes.CREATED).json({message: "Post criado com sucesso!", post: newPost})
     } catch (err: any) {
