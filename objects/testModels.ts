@@ -25,7 +25,7 @@ export class uniqueUser  {
                 data: await obj.generate()
             }
         );
-        return {...user, noHashPass: obj.noHashPass, token: obj.generateToken(user.id)}
+        return {...user, noHashPass: obj.noHashPass, token: await obj.generateToken(user.id)}
         
     }
 
