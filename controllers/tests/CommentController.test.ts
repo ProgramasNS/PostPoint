@@ -179,7 +179,7 @@ describe('Testes para comentários', () => {
                 const commentId = 0;
                 const content = {post_id: postId, id: commentId, content: "Conteúdo de teste"}
                 const res = await request(app).put(`/api/post/comment/${postId}/${commentId}`).send(content).set('Authorization', `Bearer ${authToken}`);
-                expect(Number(res.body.comment_id)).toBe(commentId);
+                expect(!res.body.comment_id).toBe(true);
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe("Comentário não encontrado!");
             }

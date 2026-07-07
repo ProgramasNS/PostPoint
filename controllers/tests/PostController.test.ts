@@ -52,7 +52,7 @@ beforeAll(async () => {
         'POST /api/post/new', () => {
             test(
                 'Criando novo post', async () => {
-                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${authToken}`).send(newPost);
+                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${authToken}`).send({title: 'Título de post inexistente', content: 'Conteúdo totalmente novo'});
                     expect(res.body.content).toBe(newPost.content);
                     expect(res.body.title).toBe(newPost.title);
                     expect(res.body.user_id).toBe(newPost.user_id);
@@ -62,7 +62,7 @@ beforeAll(async () => {
             //Função para edge cases correspondente a "criarPost" (caso o(a) usuário(a) não esteja autenticado(a))
             test(
                 'Deve retornar "FORBIDDEN" caso o(a) usuário(a) não seja autenticado(a)', async () => {
-                    let contentCopia = {...newPost};
+                    let contentCopia = {title: 'Novo Post', content: 'Novo conteúdo'};
                     const res = await request(app).post('/api/post/new').send(contentCopia);
                     expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
                     expect(res.body.error).toBe("Você não está autenticado(a)!");
@@ -125,7 +125,7 @@ describe(
     'PUT /:postId', () => {
         test (
             'Atualizar determinado post', async () => {
-                const postId = 1;
+                const postId = newPost.id;
                 const title = "Titulo de teste";
                 const contentLocal = "Conteúdo de teste";
                 const res = await request(app).put(`/api/post/${postId}`).send({title, content: contentLocal}).set('Authorization', `Bearer ${authToken}`);
@@ -146,7 +146,7 @@ describe(
         //Função para edge cases correspondente a "atualizarPost" (caso o(a) usuário(a) não tenha criado o post)
         test(
             'Deve retornar "UNAUTHORIZED" caso o(a) usuário(a) não seja o(a) criador(a) do post', async () => {
-                const postId = 1;
+                const postId = newPost.id;
                 const res = await request(app).put(`/api/post/${postId}`).send({content: 'Novo conteúdo'}).set('Authorization', `Bearer ${fakeToken}`);
                 expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
                 expect(res.body.error).toBe("Somente o(a) criador(a) do post pode atualizá-lo!");
@@ -160,7 +160,7 @@ describe(
     'DELETE /:postId', () => {
         test(
             'Apagando um post', async () => {
-                const postId = 1;
+                const postId = newPost.id;
                 const res = await request(app).delete(`/api/post/${postId}`).set('Authorization', `Bearer ${authToken}`);
                 expect(res.statusCode).toBe(HttpCodes.OK);
             }
@@ -177,7 +177,7 @@ describe(
         //Função para edge cases correspondente a "excluirPost" (caso o(a) usuário(a) não seja autor(a) do post)
         test(
             'Verifica se o(a) usuário(a) é autor(a) do post', async () => {
-                const postId = 1;
+                const postId = newPost.id;
                 const res = await request(app).delete(`/api/post/${postId}`).set('Authorization', `Bearer ${fakeToken}`);
                 expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
                 expect(res.body.error).toBe('Somente o(a) criador(a) do post pode excluí-lo!');
