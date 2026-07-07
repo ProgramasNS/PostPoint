@@ -25,7 +25,7 @@ export class uniqueUser  {
                 data: await obj.generate()
             }
         );
-        return {...user, noHashPass: obj.noHashPass, token: await obj.generateToken(user.id)}
+        return {...user, noHashPass: obj.noHashPass, token: obj.generateToken(user.id)}
         
     }
 
@@ -38,7 +38,7 @@ export class uniqueUser  {
         return {nickname: this.nickname, email: this.email, password: this.password, profilePic: this.profilePic};
     }
 
-    private async generateToken(userId: number){
+    private generateToken(userId: number){
         const payload = { 
             userId: userId,
             nickname: "Usuário de teste"

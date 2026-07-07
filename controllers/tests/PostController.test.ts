@@ -102,7 +102,7 @@ describe('GET /api/post/author/:authorId', () => {
      //Função correspondente a listarPostsPorUsuario
         test(
             'Listar os posts de um usuário específico', async () => {
-                const authorId = newPost.user_id;
+                const authorId = newUser.id;
                 const res = await request(app).get(`/api/post/author/${authorId}`);
                 expect(res.statusCode).toBe(HttpCodes.OK);
                 const postsUser = res.body;
