@@ -18,7 +18,7 @@ describe('Testes para users', () => {
             await client.comments.deleteMany();
             await client.posts.deleteMany();
             await client.users.deleteMany();
-            newUser = await uniqueUser.init();
+            newUser = await new uniqueUser().init();
             authToken = newUser.token;
         }
     )

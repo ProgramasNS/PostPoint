@@ -14,24 +14,22 @@ export class uniqueUser  {
     public profilePic!: string | null;
     private client: PrismaClient = db;
 
-    private constructor () {
-      
-    }
-    public static async init(): Promise<any> {
-        const obj = new this();
-        obj.noHashPass = 'Senha super segura';
-        const user = await obj.client.users.create(
+    public async init(): Promise<any> {
+
+        this.noHashPass = 'Senha super segura';
+        const user = await this.client.users.create(
             {
-                data: await obj.generate()
+                data: await this.generate()
             }
         );
-        return {...user, noHashPass: obj.noHashPass, token: obj.generateToken(user.id)}
+        return {...user, noHashPass: this.noHashPass, token: this.generateToken(user.id)}
         
     }
 
     private async generate(): Promise<any> {
+        const random = Math.floor(1 + Math.random() * 99999999999);
         this.nickname = `Usuário ${Date.now()}`;
-        this.email = `email${Math.floor(1 + Math.random() * 99999999999)}@mail.com`;
+        this.email = `email${random}${Date.now()}@mail.com`;
         this.profilePic = '';
         
         this.password = await bcrypt.hash('Senha super segura', 10);

@@ -31,7 +31,7 @@ beforeAll(async () => {
     
     
     // Criar dados de teste
-    newUser = await uniqueUser.init();
+    newUser = await new uniqueUser().init();
     await client.users.create({
         data: fakeUser
     })

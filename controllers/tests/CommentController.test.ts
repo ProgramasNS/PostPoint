@@ -41,7 +41,7 @@ describe('Testes para comentários', () => {
         fakeToken = await tokenFalso();
         fakeUser = await userFalso();
         //Criando novos dados
-        newUser = await uniqueUser.init();
+        newUser = await new uniqueUser().init();
         await client.users.create(
             {
                 data: fakeUser
