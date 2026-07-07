@@ -2,10 +2,6 @@ import { afterAll, beforeAll, describe, expect, test} from "@jest/globals";
 import request from 'supertest';
 import app from "../../app";
 import HttpCodes from "../../objects/Http";
-import { PrismaClient } from '../../generated/prisma';
-import verificarToken from "../../middlewares/auth";
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import {uniqueUser} from '../../objects/testModels'
 import {db} from '../../db/TestsDatabase'
@@ -31,6 +27,7 @@ beforeAll(async () => {
     
     // Criar dados de teste
     newUser = await new uniqueUser().init();
+    console.log('newUser criado:', newUser.id, newUser.nickname);
     newPost = await db.posts.create({
         data: {
             title: "Título de teste",
