@@ -22,14 +22,14 @@ jobs:
 
       - name: Instalar dependências
         run: npm ci
+      
+      - name: Gerar o Prisma
+        run: npx prisma generate
 
       - name: Rodar push Prisma
         env:
           DATABASE_URL: ${{ vars.DATABASE_URL }}
         run: npx prisma db push
-      
-      - name: Gerar o Prisma
-        run: npx prisma generate
 
       - name: Rodar testes
         run: npm test
