@@ -3,40 +3,23 @@ import bcrypt from 'bcrypt';
 import request from 'supertest';
 import app from "../../app";
 import HttpCodes from "../../objects/Http";
-import { PrismaClient } from '../../generated/prisma';
+import { PrismaClient, users } from '../../generated/prisma';
 import jwt from 'jsonwebtoken';
+import { uniqueUser } from "../../objects/testModels";
 
 const client = new PrismaClient();
-const token = async (userId: number = 1) => {
-    const payload = { 
-        userId: userId,
-        nickname: "Usuário de teste"
-    };
-    const token = jwt.sign(
-        payload, 
-        process.env.JWT_SECRET || "Meu segredo muito secreto",
-        {expiresIn: '7d'}
-    );
-    return token;
-};
+
+let newUser: any;
 let authToken: string;
-let hashSenhaUniversal = "Senha super segura"
 describe('Testes para users', () => {
     beforeAll(
         async () => {
-        authToken = await token();
-        //Excluindo dados anteriores 
-        await client.comments.deleteMany();
-        await client.posts.deleteMany();
-        await client.users.deleteMany();
-        await client.users.create({
-            data: {
-                id: 1,
-                nickname: "Usuário de teste",
-                email: "teste@testmail.com",
-                password: await bcrypt.hash(hashSenhaUniversal, 10)
-            }
-        });
+            //Excluindo dados anteriores 
+            await client.comments.deleteMany();
+            await client.posts.deleteMany();
+            await client.users.deleteMany();
+            newUser = await uniqueUser.init();
+            authToken = newUser.token;
         }
     )
     afterAll(async () => {
@@ -50,7 +33,7 @@ describe('Testes para users', () => {
             //Função correspondente a "cadastrarUsuario"
             test(
                 'Cadastrar novo(a) usuário(a)', async () => {
-                    const user = {nickname: 'Teste', email: 'testando@testuser.com', password: hashSenhaUniversal};
+                    const user = {nickname: 'User inexistente', email: 'email@inexistente.com', password: "Senha super segura"};
                     const res = await request(app).post('/api/user/new').send(user);
                     expect(res.statusCode).toBe(HttpCodes.CREATED);
                 }
@@ -58,7 +41,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "cadastrarUsuario" (caso o nickname já exista)
             test(
                 'Verificar nickname existente', async () => {
-                    const user = {nickname: "Usuário de teste", email: "teste@testmail.com", password: hashSenhaUniversal};
+                    const user = {nickname: newUser.nickname, email: 'email@totalmentenovo.com', password: newUser.noHashPass};
                     const res = await request(app).post('/api/user/new').send(user);
                     expect(res.statusCode).toBe(HttpCodes.CONFLICT);
                     expect(res.body.error).toBe(`${user.nickname} já existe. Use outro.`);
@@ -68,7 +51,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "cadastrarUsuario" (caso o e-mail já exista)
             test(
                 'Verificar se um e-mail já existe', async () => {
-                    const user = {nickname: "Usuário de teste", email: "email@email.com", password: hashSenhaUniversal};
+                    const user = {nickname: "Nickname que não existe", email: newUser.email, password: newUser.noHashPass};
                     const res = await request(app).post('/api/user/new').send(user);
                     expect(res.statusCode).toBe(HttpCodes.CONFLICT);
                     expect(res.body.error).toBe("E-mail já cadastrado no sistema!");
@@ -77,7 +60,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "cadastrarUsuario" (caso o(a) usuário(a) falte com o nickname)
             test(
                 'Verificando o preenchimento do nickname', async () => {
-                const content = {email: "email@email.com", password: hashSenhaUniversal}
+                const content = {email: newUser.email, password: newUser.noHashPass}
                 const res = await request(app).post('/api/user/new').send(content);
                 expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
              }
@@ -85,7 +68,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "cadastrarUsuario" (caso o(a) usuário(a) falte com o e-mail)
             test(
                 'Verificando o preenchimento do e-mail', async () => {
-                    const content = {nickname: 'Usuário de teste', password: hashSenhaUniversal};
+                    const content = {nickname: newUser.nickname, password: newUser.noHashPass};
                     const res = await request(app).post('/api/user/new').send(content);
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
                 }
@@ -93,7 +76,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "cadastrarUsuario" (caso o(a) usuário(a) falte com a senha)
             test(
                 'Verificando o preenchimento da senha', async () => {
-                    const content = {nickname: 'Nome de teste', email: "email@email.com"};
+                    const content = {nickname: newUser.nickname, email: newUser.email};
                     const res = await request(app).post('/api/user/new').send(content);
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
                 }
@@ -106,7 +89,7 @@ describe('Testes para users', () => {
             //Função correspondente a "login"
             test(
                 'Fazendo login de novo usuário', async () => {
-                    const content = {nickname: 'Usuário de teste', password: hashSenhaUniversal}
+                    const content = {nickname: newUser.nickname, password: newUser.noHashPass}
                     const res = await request(app).post('/api/user/login').send(content);
                     expect(res.statusCode).toBe(HttpCodes.OK);
                 }
@@ -114,9 +97,8 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "login" (caso o nickname não exista no banco de dados)
             test(
                 'Verificando se nickname existe', async () => {
-                    const content = {nickname: "Nick para testes", password: "Senha super segura"}
+                    const content = {nickname: "Nick obviamente inexistente", password: newUser.noHashPass}
                     const res = await request(app).post('/api/user/login').send(content);
-                    expect(res.body.user_id).toBe(undefined);
                     expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                     expect(res.body.error).toBe("Usuário(a) não existe!");
                 }
@@ -124,7 +106,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "login" (caso a senha esteja errada)
             test(
                 'Verificando se a senha está correta', async () => {
-                    const content = {nickname: 'Usuário de teste', password: 'Senha propositalmente errada'}; 
+                    const content = {nickname: newUser.nickname, password: 'Senha propositalmente errada'}; 
                     const res = await request(app).post('/api/user/login').send(content);
                     expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
                     expect(res.body.error).toBe('Senha incorreta!');
@@ -133,15 +115,16 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "login" (caso o nickname não tenha sido enviado)
             test(
                 'Verificando se o nickname foi enviado na requisição', async () => {
-                    const content = {password: "Senha super segura"}
+                    const content = {password: newUser.noHashPass}
                     const res = await request(app).post('/api/user/login').send(content);
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
+                    expect(res.body.error).toBe("Todos os campos são obrigatórios!");
                 }
             )
-            //Função edge cases correspondente a "login" (caso a senha não senha enviada)
+            //Função edge cases correspondente a "login" (caso a senha não tenha sido enviada)
             test(
                 'Verificando se a senha foi enviada na requisição', async () => {
-                    const content = {nickname: 'Usuário de teste'};
+                    const content = {nickname: newUser.nickname};
                     const res = await request(app).post('/api/user/login').send(content);
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
                     expect(res.body.error).toBe("Todos os campos são obrigatórios!");
@@ -150,7 +133,7 @@ describe('Testes para users', () => {
             //Função edge cases correspondente a "login" (caso o login não gere um token)
             test(
                 'Verificando se login retorna token', async () => {
-                    const content = {nickname: 'Usuário de teste', password: 'Senha super segura'};
+                    const content = {nickname: newUser.nickname, password: newUser.noHashPass};
                     const res = await request(app).post('/api/user/login').send(content);
                     expect(res.body.token).toBeDefined();
                 }

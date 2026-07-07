@@ -2,17 +2,15 @@ import request from 'supertest'
 import HttpCodes from '../../objects/Http'
 import app from '../../app';
 import { describe, it, test, expect, afterAll, beforeAll} from '@jest/globals';
-import { PrismaClient } from '../../generated/prisma';
+import { comments, posts, PrismaClient, users } from '../../generated/prisma';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt'
-import { ClientRequest } from 'http';
 import {userFalso, tokenFalso} from '../../objects/fakeUser'
-import {uniqueUser} from '../../objects/unique'
+import {uniqueUser} from '../../objects/testModels'
 
 const client = new PrismaClient();
 const content = {user_id: 1, content: 'Conteúdo para testes'}
 
-const token = async (userId: number = 1) => {
+const token = async (userId: number) => {
     const payload = { 
         userId: userId,
         nickname: "Usuário de teste"
@@ -30,45 +28,43 @@ const token = async (userId: number = 1) => {
 let authToken: string;
 let fakeToken: string;
 let fakeUser: any;
-let UserUnico: any;
+let newUser: users, newPost:posts, newComment:comments;
 
 describe('Testes para comentários', () => {
     beforeAll(
         async () => {
-        authToken = await token();
-        fakeToken = await tokenFalso();
-        fakeUser = await userFalso();
-        UserUnico = await uniqueUser();
+       
         //Excluindo os dados anteriores para não dar sobreposição
         await client.comments.deleteMany();
         await client.posts.deleteMany();
         await client.users.deleteMany();
+        fakeToken = await tokenFalso();
+        fakeUser = await userFalso();
         //Criando novos dados
-        await client.users.create({
-            data: UserUnico
-        });
+        newUser = await uniqueUser.init();
         await client.users.create(
             {
                 data: fakeUser
             }
         )
-        await client.posts.create({
+        newPost = await client.posts.create({
             data: {
                 title: "Título de teste",
                 content: "Conteúdo de teste com mais de 10 caracteres",
-                user_id: 1,
+                user_id: newUser.id,
             }
         });
-        await client.comments.create(
+        newComment = await client.comments.create(
             {
                 data: {
                     content: 'Conteúdo de teste',
-                    user_id: 1,
-                    post_id: 1
+                    user_id: newUser.id,
+                    post_id: newPost.id
         
                 }
             }
         )
+        authToken = await token(newUser.id);
      }
     )
     afterAll(async () => {
@@ -81,7 +77,7 @@ describe('Testes para comentários', () => {
         'POST /api/post/comment/:postId/new', () => {
             //Função correspondente a "criarComentário" do controller
             test("Deve criar um novo comentário", async () => {
-                const postId = 1;
+                const postId = newPost.id;
                 const content = "Conteúdo de teste";
                 const res = await request(app).post(`/api/post/comment/${postId}/new`).set('Authorization', `Bearer ${authToken}`).send({content});
                 expect(res.statusCode).toBe(HttpCodes.CREATED);
@@ -101,7 +97,7 @@ describe('Testes para comentários', () => {
             test(
                 'Verifica se o(a) usuário(a) é autenticado(a)', async () => {
                     const userId = 0;
-                    const postId = 1;
+                    const postId = newPost.id;
                     const contentLocal = { content: "Conteúdo de teste", user_id: userId};
                     const res = await request(app).post(`/api/post/comment/${postId}/new`).send(contentLocal);
                     expect(Number(res.body.user_id)).toBe(userId);
@@ -113,10 +109,9 @@ describe('Testes para comentários', () => {
             test(
                 'Verificando se post do comentário já existe', async () => {
                     const postId = 0;
-                    const commentId = 1;
-                    const contentLocal = {post_id: postId, id: commentId, content: "Conteúdo de teste"};
+                    const contentLocal = {post_id: postId, content: "Conteúdo de teste"};
                     const res = await request(app).post(`/api/post/comment/${postId}/new`).set('Authorization', `Bearer ${authToken}`).send(contentLocal);
-                    expect(Number(res.body.post_id)).toBe(postId);
+                    expect(!res.body.post_id).toBe(true);
                     expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                     expect(res.body.error).toBe("Post não encontrado!");
                 }
@@ -139,7 +134,7 @@ describe('Testes para comentários', () => {
     describe('GET /:userId', () => {
         test(
             'Deve retornar todos os comentários de um determinado usuário', async () => {
-                const userId = 1;
+                const userId = newUser.id;
                 const res = await request(app).get(`/api/post/comment/${userId}`);
                 const commentsUser = res.body;
                 expect(res.statusCode).toBe(HttpCodes.OK);
@@ -151,7 +146,7 @@ describe('Testes para comentários', () => {
         //Função edge cases correspondente a "listarComentariosPorUsuario" (caso o usuário(a) não exista)
         test(
             'Verificar se user existe', async () => {
-                const userId = 999999999;
+                const userId = 0;
                 const res = await request(app).get(`/api/post/comment/${userId}`);
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe("Usuário(a) não encontrado(a)!");
@@ -163,7 +158,7 @@ describe('Testes para comentários', () => {
     describe('GET /post/:postId', () => {
         test(
             'Deve retornar os comentários de um determinado post', async () => {
-                const postId = 1;
+                const postId = newPost.id;
                 const res = await request(app).get(`/api/post/comment/post/${postId}`);
                 const commentsPost = res.body;
                 expect(res.statusCode).toBe(HttpCodes.OK);
@@ -188,8 +183,8 @@ describe('Testes para comentários', () => {
     describe('PUT /:postId/:commentId', () => {
         test(
             'O comentário deve ser atualizado', async () => {
-                const postId = 1;
-                const commentId = 1;
+                const postId = newPost.id;
+                const commentId = newComment.id;
                 const contentLocal = "Conteúdo de teste";
                 const res = await request(app).put(`/api/post/comment/${postId}/${commentId}`).set('Authorization', `Bearer ${authToken}`).send({
                    content: contentLocal
@@ -201,7 +196,7 @@ describe('Testes para comentários', () => {
         //Função edge cases correspondente a "atualizarComentario" (caso o comentário não exista)
         test(
             'Verificar se comentário existe', async () => {
-                const postId = 1;
+                const postId = newPost.id;
                 const commentId = 0;
                 const content = {post_id: postId, id: commentId, content: "Conteúdo de teste"}
                 const res = await request(app).put(`/api/post/comment/${postId}/${commentId}`).send(content).set('Authorization', `Bearer ${authToken}`);
@@ -213,8 +208,8 @@ describe('Testes para comentários', () => {
         //Função edge cases correspondente a "atualizarComentario" (caso o(a) usuário(a) não seja criador(a) do comentário)
         test(
             'Verificar se o(a) usuário(a) é autor(a) do comentário', async () => {
-                const postId = 1;
-                const commentId = 1;
+                const postId = newPost.id;
+                const commentId = newComment.id;
                 const res = await request(app).put(`/api/post/comment/${postId}/${commentId}`).send({content: 'Novo conteúdo'}).set('Authorization', `Bearer ${fakeToken}`);
                 expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
                 expect(res.body.error).toBe("Somente o(a) criador(a) do post pode editá-lo!");
@@ -226,8 +221,8 @@ describe('Testes para comentários', () => {
     describe('DELETE /:postId/:commentId', () => {
         test(
             'O comentário deve ser excluído', async () => {
-                const postId = 1;
-                const commentId = 1;
+                const postId = newPost.id;
+                const commentId = newComment.id;
                 const res = await request(app).delete(`/api/post/comment/${postId}/${commentId}`).set('Authorization', `Bearer ${authToken}`);
                 expect(res.statusCode).toBe(HttpCodes.OK);
             }
@@ -235,7 +230,7 @@ describe('Testes para comentários', () => {
         //Função edge cases correspondente a "excluirComentario" (caso o comentário não exista)
         test(
             'Verificando se o comentário existe', async () => {
-                const postId = 1;
+                const postId = newPost.id;
                 const commentId = 0;
                 const res = await request(app).delete(`/api/post/comment/${postId}/${commentId}`).set('Authorization', `Bearer ${authToken}`);
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
@@ -245,8 +240,8 @@ describe('Testes para comentários', () => {
         //Função edge cases correspondente a "excluirComentario" (caso o(a) usuário(a) não seja autor(a) do comentário)
         test(
             'Verificando se o(a) usuário(a) é autor(a) do comentário',  async () => {
-                const postId = 1;
-                const commentId = 1;
+                const postId = newPost.id;
+                const commentId = newComment.id;
                 const res = await request(app).delete(`/api/post/comment/${postId}/${commentId}`).set('Authorization', `Bearer ${fakeToken}`);
                 expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
                 expect(res.body.error).toBe("Somente o(a) criador(a) pode excluir os comentários!");

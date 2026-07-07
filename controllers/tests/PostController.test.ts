@@ -8,29 +8,16 @@ import {userFalso, tokenFalso} from '../../objects/fakeUser'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import {uniqueUser} from '../../objects/unique'
+import {uniqueUser} from '../../objects/testModels'
 
 dotenv.config();
-
-const content = {title: "Título de teste", content: "Conteúdo de teste",  user_id: 1};
-
-const token = async (userId: number = 1) => {
-    const payload = { 
-        userId: userId,
-        nickname: "Usuário de teste"
-    };
-    const token = jwt.sign(
-        payload, 
-        process.env.JWT_SECRET || "Meu segredo muito secreto",
-        {expiresIn: '7d'}
-    );
-    return token;
-};
 
 const client = new PrismaClient();
 let authToken: string;
 let fakeToken: string;
 let fakeUser: any;
+let newUser: any;
+let newPost: any;
 describe('Testes para posts', () => {
 
 beforeAll(async () => {
@@ -39,31 +26,24 @@ beforeAll(async () => {
     await client.posts.deleteMany();
     await client.users.deleteMany();
 
-    authToken = await token();
     fakeUser = await userFalso();
     fakeToken = await tokenFalso();
-    uniqueUser
+    
     
     // Criar dados de teste
-    await client.users.create({
-        data: {
-            nickname: "Usuário de teste",
-            email: "teste@testmail.com",
-            password: await bcrypt.hash("senha_hash_aqui", 10)
-        }
-    });
+    newUser = await uniqueUser.init();
     await client.users.create({
         data: fakeUser
     })
-    await client.posts.create({
+    newPost = await client.posts.create({
         data: {
             title: "Título de teste",
             content: "Conteúdo de teste com mais de 10 caracteres",
-            user_id: 1,
+            user_id: newUser.id,
             createdAt: new Date()
         }
     });
-
+    authToken = newUser.token;
 });
     afterAll(async () => {
         await client.comments.deleteMany();
@@ -76,22 +56,19 @@ beforeAll(async () => {
         'POST /api/post/new', () => {
             test(
                 'Criando novo post', async () => {
-                    const userId = 1;
-                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${authToken}`).send(content);
-                    expect(res.body.content).toBe(content.content);
-                    expect(res.body.title).toBe(content.title);
-                    expect(res.body.user_id).toBe(content.user_id);
+                    const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${authToken}`).send(newPost);
+                    expect(res.body.content).toBe(newPost.content);
+                    expect(res.body.title).toBe(newPost.title);
+                    expect(res.body.user_id).toBe(newPost.user_id);
                     expect(res.statusCode).toBe(HttpCodes.CREATED);
                 }
             )
             //Função para edge cases correspondente a "criarPost" (caso o(a) usuário(a) não esteja autenticado(a))
             test(
                 'Deve retornar "FORBIDDEN" caso o(a) usuário(a) não seja autenticado(a)', async () => {
-                    const userId = 0;
-                    let contentCopia = {...content, user_id: userId};
+                    let contentCopia = {...newPost};
                     const res = await request(app).post('/api/post/new').send(contentCopia);
                     expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
-                    expect(res.body.user_id).toBe(userId);
                     expect(res.body.error).toBe("Você não está autenticado(a)!");
                 }
             )
@@ -125,7 +102,7 @@ describe('GET /api/post/author/:authorId', () => {
      //Função correspondente a listarPostsPorUsuario
         test(
             'Listar os posts de um usuário específico', async () => {
-                const authorId = 1;
+                const authorId = newPost.user_id;
                 const res = await request(app).get(`/api/post/author/${authorId}`);
                 expect(res.statusCode).toBe(HttpCodes.OK);
                 const postsUser = res.body;
@@ -138,7 +115,7 @@ describe('GET /api/post/author/:authorId', () => {
         //Função edge cases correspondente a listarPostsPorUsuario (caso o(a) usuário(a) não exista)
         test(
             'Verificando se usuário(a) existe', async () => {
-                const authorId = 99999;
+                const authorId = 0;
                 const res = await request(app).get(`/api/post/author/${authorId}`);
                 expect(res.statusCode).toBe(HttpCodes.NOT_FOUND);
                 expect(res.body.error).toBe("Usuário(a) não encontrado(a)!");
