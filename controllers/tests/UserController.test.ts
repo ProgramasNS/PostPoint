@@ -20,6 +20,7 @@ describe('Testes para users', () => {
             await client.users.deleteMany();
             newUser = await new uniqueUser().init();
             authToken = newUser.token;
+            expect(newUser).toBeDefined();
         }
     )
     afterAll(async () => {

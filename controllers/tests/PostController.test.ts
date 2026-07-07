@@ -37,6 +37,8 @@ beforeAll(async () => {
         }
     });
     authToken = newUser.token;
+    expect(newUser).toBeDefined();
+    expect(newPost).toBeDefined();
 });
     afterAll(async () => {
         await db.comments.deleteMany();

@@ -34,6 +34,9 @@ describe('Testes para comentários', () => {
                 user_id: newUser.id,
             }
         });
+        if (!newPost || !newPost.id) {
+        throw new Error('Post não foi criado!');
+    }
         newComment = await db.comments.create(
             {
                 data: {
@@ -44,6 +47,12 @@ describe('Testes para comentários', () => {
                 }
             }
         )
+        if (!newComment || !newComment.id) {
+            throw new Error("Comentário não criado!");
+        }
+        expect(newUser).toBeDefined();
+        expect(newPost).toBeDefined();
+        expect(newComment).toBeDefined();
      }
     )
     afterAll(async () => {
