@@ -4,15 +4,14 @@ import app from "../../app";
 import HttpCodes from "../../objects/Http";
 import { PrismaClient } from '../../generated/prisma';
 import verificarToken from "../../middlewares/auth";
-import {userFalso, tokenFalso} from '../../objects/fakeUser'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import {uniqueUser} from '../../objects/testModels'
+import {db} from '../../db/TestsDatabase'
 
 dotenv.config();
 
-const client = new PrismaClient();
 let authToken: string;
 let fakeToken: string;
 let fakeUser: any;
@@ -22,20 +21,20 @@ describe('Testes para posts', () => {
 
 beforeAll(async () => {
     //Apagando os dados dos testes anteriores para não gerar sobreposição
-    await client.comments.deleteMany();
-    await client.posts.deleteMany();
-    await client.users.deleteMany();
+    await db.comments.deleteMany();
+    await db.posts.deleteMany();
+    await db.users.deleteMany();
 
-    fakeUser = await userFalso();
-    fakeToken = await tokenFalso();
+    fakeUser = await new uniqueUser().init();
+    fakeToken = fakeUser.token;
     
     
     // Criar dados de teste
     newUser = await new uniqueUser().init();
-    await client.users.create({
+    await db.users.create({
         data: fakeUser
     })
-    newPost = await client.posts.create({
+    newPost = await db.posts.create({
         data: {
             title: "Título de teste",
             content: "Conteúdo de teste com mais de 10 caracteres",
@@ -46,10 +45,10 @@ beforeAll(async () => {
     authToken = newUser.token;
 });
     afterAll(async () => {
-        await client.comments.deleteMany();
-        await client.posts.deleteMany();
-        await client.users.deleteMany();
-        await client.$disconnect();
+        await db.comments.deleteMany();
+        await db.posts.deleteMany();
+        await db.users.deleteMany();
+        await db.$disconnect();
     })
     //Função correspondente a "criarPost"
     describe(

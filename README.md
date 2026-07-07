@@ -74,7 +74,7 @@
 <h3>db</h3>
 <p>Corresponde à pasta dedicada ao instanciamento do banco de dados, o qual é exportado como PrismaClient pelos seus dois módulos: Database.ts e TestsDatabase.ts. O PrismaClient do Database.ts é baseado no próprio schema gerado pelo Prisma, e é o meio pelo qual o banco de dados é invocado no código. O TestsDatabase.ts é o PrismaClient específico para testes automatizados</p>
 <h3>objects</h3>
-<p>Corresponde à pasta dedicada aos objetos universais, feitos para serem usados em vários módulos: o módulo Http, com o objeto HttpCodes, o qual, conforme dito previamente, possui como atributos os códigos HTTP usados no projeto. O objeto é exportado pelo módulo Http.ts; o módulo fakeUser, o qual possui os objetos userFalso, o qual corresponde a um user feito propositalmente para falhar nos testes de autoria, e tokenFalso, o qual corresponde a seu respectivo token; e o módulo testModels, o qual gera um user único para os testes automatizados.</p>
+<p>Corresponde à pasta dedicada aos objetos universais, feitos para serem usados em vários módulos: o módulo Http, com o objeto HttpCodes, o qual, conforme dito previamente, possui como atributos os códigos HTTP usados no projeto. O objeto é exportado pelo módulo Http.ts e o módulo testModels, o qual gera um user único para os testes automatizados.</p>
 <h3>types</h3>
 <p>Sobrescreve o módulo Express de modo a colocar a propriedade userId. Possui o módulo express.d.ts.</p>
 <h3>github/workflows</h3>

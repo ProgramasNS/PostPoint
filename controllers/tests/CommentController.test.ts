@@ -4,57 +4,37 @@ import app from '../../app';
 import { describe, it, test, expect, afterAll, beforeAll} from '@jest/globals';
 import { comments, posts, PrismaClient, users } from '../../generated/prisma';
 import jwt from 'jsonwebtoken';
-import {userFalso, tokenFalso} from '../../objects/fakeUser'
 import {uniqueUser} from '../../objects/testModels'
-
-const client = new PrismaClient();
-const content = {user_id: 1, content: 'Conteúdo para testes'}
-
-const token = async (userId: number) => {
-    const payload = { 
-        userId: userId,
-        nickname: "Usuário de teste"
-    };
-    const token = jwt.sign(
-        payload, 
-        process.env.JWT_SECRET || "Meu segredo muito secreto",
-        {expiresIn: '7d'}
-    );
-    return token;
-};
+import { db } from '../../db/TestsDatabase';
 
 //Token feito especificamente para o user falso para gerar uma falsa autenticação
 
 let authToken: string;
 let fakeToken: string;
 let fakeUser: any;
-let newUser: users, newPost:posts, newComment:comments;
+let newUser: any, newPost:posts, newComment:comments;
 
 describe('Testes para comentários', () => {
     beforeAll(
         async () => {
        
         //Excluindo os dados anteriores para não dar sobreposição
-        await client.comments.deleteMany();
-        await client.posts.deleteMany();
-        await client.users.deleteMany();
-        fakeToken = await tokenFalso();
-        fakeUser = await userFalso();
+        await db.comments.deleteMany();
+        await db.posts.deleteMany();
+        await db.users.deleteMany();
+        fakeUser = await new uniqueUser().init();
+        fakeToken = fakeUser.token;
         //Criando novos dados
         newUser = await new uniqueUser().init();
-        await client.users.create(
-            {
-                data: fakeUser
-            }
-        )
-        newPost = await client.posts.create({
+        authToken = newUser.token;
+        newPost = await db.posts.create({
             data: {
                 title: "Título de teste",
                 content: "Conteúdo de teste com mais de 10 caracteres",
                 user_id: newUser.id,
             }
         });
-        newComment = await client.comments.create(
+        newComment = await db.comments.create(
             {
                 data: {
                     content: 'Conteúdo de teste',
@@ -64,14 +44,13 @@ describe('Testes para comentários', () => {
                 }
             }
         )
-        authToken = await token(newUser.id);
      }
     )
     afterAll(async () => {
-        await client.comments.deleteMany();
-        await client.posts.deleteMany();
-        await client.users.deleteMany();
-        await client.$disconnect();
+        await db.comments.deleteMany();
+        await db.posts.deleteMany();
+        await db.users.deleteMany();
+        await db.$disconnect();
     });
     describe(
         'POST /api/post/comment/:postId/new', () => {
