@@ -23,14 +23,14 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
-      - name: Rodar migrations Prisma
+      - name: Rodar push Prisma
         env:
           DATABASE_URL: ${{ vars.DATABASE_URL }}
-        run: npx prisma migrate deploy
+        run: npx prisma db push
       
       - name: Baseline database 
         run: npx prisma migrate resolve --applied 20260704231106_require_comments_content
-        
+
       - name: Gerar o Prisma
         run: npx prisma generate
 
