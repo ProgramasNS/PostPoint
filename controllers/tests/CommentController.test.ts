@@ -66,7 +66,7 @@ describe('Testes para comentários', () => {
             //Função para edge cases correspondente a "criarComentario" caso o comentário possua menos de 10 caracteres ou seja vazio
             test(
                 'Verificar se conteúdo tem mais de 10 caracteres', async () => {
-                    const postId = 1;
+                    const postId = newPost.id;
                     const res = await request(app).post(`/api/post/comment/${postId}/new`).set('Authorization', `Bearer ${authToken}`).send({content: ''});
                     expect(res.statusCode).toBe(HttpCodes.BAD_REQUEST);
                     expect(res.body.error).toBe("Comentários precisam de pelo menos 10 caracteres!");
