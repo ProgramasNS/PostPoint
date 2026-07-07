@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt'
 import { ClientRequest } from 'http';
 import {userFalso, tokenFalso} from '../../objects/fakeUser'
+import {uniqueUser} from '../../objects/unique'
 
 const client = new PrismaClient();
 const content = {user_id: 1, content: 'Conteúdo para testes'}
@@ -29,6 +30,7 @@ const token = async (userId: number = 1) => {
 let authToken: string;
 let fakeToken: string;
 let fakeUser: any;
+let UserUnico: any;
 
 describe('Testes para comentários', () => {
     beforeAll(
@@ -36,17 +38,14 @@ describe('Testes para comentários', () => {
         authToken = await token();
         fakeToken = await tokenFalso();
         fakeUser = await userFalso();
+        UserUnico = await uniqueUser();
         //Excluindo os dados anteriores para não dar sobreposição
         await client.comments.deleteMany();
         await client.posts.deleteMany();
         await client.users.deleteMany();
         //Criando novos dados
         await client.users.create({
-            data: {
-                nickname: "Usuário de teste",
-                email: "teste@testmail.com",
-                password: await bcrypt.hash('Senha super segura', 10)
-            }
+            data: UserUnico
         });
         await client.users.create(
             {

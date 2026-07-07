@@ -8,6 +8,7 @@ import {userFalso, tokenFalso} from '../../objects/fakeUser'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import {uniqueUser} from '../../objects/unique'
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ beforeAll(async () => {
     authToken = await token();
     fakeUser = await userFalso();
     fakeToken = await tokenFalso();
+    uniqueUser
     
     // Criar dados de teste
     await client.users.create({
