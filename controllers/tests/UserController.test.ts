@@ -161,7 +161,7 @@ describe('Testes para users', () => {
             test(
                 'Verificando autenticação', async () => {
                     const res = await request(app).put('/api/user/photo').send({url: 'https://media.istockphoto.com/id/1980276924/vector/no-photo-thumbnail-graphic-element-no-found-or-available-image-in-the-gallery-or-album-flat.jpg'});
-                    expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
+                    expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
                     expect(res.body.error).toBe("É necessário estar autenticado(a) para atualizar a foto de perfil!");
                 }
             )

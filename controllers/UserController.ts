@@ -16,10 +16,10 @@ export const cadastrarUsuario = async (req: Request, res: Response) => {
         const emailExists = await db.users.findUnique({
             where: {email}
         });
-        if (nickExists != null) {
+        if (nickExists) {
             return res.status(HttpCodes.CONFLICT).json({error: `${nickname} já existe. Use outro.`});
         }
-        if (emailExists != null) {
+        if (emailExists) {
             return res.status(HttpCodes.CONFLICT).json({error: "E-mail já cadastrado no sistema!"});
         }
         const hashPassword = await bcrypt.hash(password, 10);
@@ -77,7 +77,7 @@ export const atualizarFoto = async (req: Request, res: Response) => {
             return res.status(HttpCodes.BAD_REQUEST).json({error: "Insira uma imagem válida!"});
         }
         if (!userId) {
-            return res.status(HttpCodes.FORBIDDEN).json({error: "É necessário estar autenticado(a) para atualizar a foto de perfil!"});
+            return res.status(HttpCodes.UNAUTHORIZED).json({error: "É necessário estar autenticado(a) para atualizar a foto de perfil!"});
         }
         const reqImagem = await db.users.update({where: {id: userId}, data: {
                 profilePic: url
