@@ -27,7 +27,10 @@ jobs:
         env:
           DATABASE_URL: ${{ vars.DATABASE_URL }}
         run: npx prisma migrate deploy
-
+      
+      - name: Baseline database 
+        run: npx prisma migrate resolve --applied 20260704231106_require_comments_content
+        
       - name: Gerar o Prisma
         run: npx prisma generate
 
