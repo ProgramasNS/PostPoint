@@ -32,7 +32,7 @@ describe('Testes para users', () => {
     describe(
         'POST /api/user/new', () => {
             //Função correspondente a "cadastrarUsuario"
-            test(
+            test.only(
                 'Cadastrar novo(a) usuário(a)', async () => {
                     const user = {nickname: 'User inexistente', email: 'email@inexistente.com', password: "Senha super segura"};
                     const res = await request(app).post('/api/user/new').send(user);

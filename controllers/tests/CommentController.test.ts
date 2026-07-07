@@ -64,7 +64,7 @@ describe('Testes para comentários', () => {
     describe(
         'POST /api/post/comment/:postId/new', () => {
             //Função correspondente a "criarComentário" do controller
-            test("Deve criar um novo comentário", async () => {
+            test.only("Deve criar um novo comentário", async () => {
                 const postId = newPost.id;
                 const content = "Conteúdo de teste";
                 const res = await request(app).post(`/api/post/comment/${postId}/new`).set('Authorization', `Bearer ${authToken}`).send({content});

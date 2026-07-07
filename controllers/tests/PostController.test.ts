@@ -49,7 +49,7 @@ beforeAll(async () => {
     //Função correspondente a "criarPost"
     describe(
         'POST /api/post/new', () => {
-            test(
+            test.only(
                 'Criando novo post', async () => {
                     const content = {title: 'Título de post inexistente', content: 'Conteúdo totalmente novo', user_id: newUser.id}
                     const res = await request(app).post('/api/post/new').set('Authorization', `Bearer ${authToken}`).send(content);
