@@ -31,9 +31,6 @@ beforeAll(async () => {
     
     // Criar dados de teste
     newUser = await new uniqueUser().init();
-    await db.users.create({
-        data: fakeUser
-    })
     newPost = await db.posts.create({
         data: {
             title: "Título de teste",
