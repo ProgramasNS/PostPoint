@@ -29,6 +29,7 @@ jobs:
       - name: Rodar push Prisma
         env:
           DATABASE_URL: ${{ vars.DATABASE_URL }}
+          DATABASE_TEST_URL: ${{vars.DATABASE_TEST_URL}}
         run: npx prisma db push
 
       - name: Rodar testes

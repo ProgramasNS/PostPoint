@@ -3,6 +3,8 @@ import {Request, Response} from 'express'
 import HttpCodes from '../objects/Http'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import dotenv from 'dotenv'
+dotenv.config();
 
 export const cadastrarUsuario = async (req: Request, res: Response) => {
     try{
@@ -82,9 +84,7 @@ export const atualizarFoto = async (req: Request, res: Response) => {
         const reqImagem = await db.users.update({where: {id: userId}, data: {
                 profilePic: url
             }});
-        return res.status(HttpCodes.OK).json({
-            message: "Foto de perfil adicionada/atualizada", reqImagem
-        });
+        return res.status(HttpCodes.OK).json({url: reqImagem});
     } catch (err: any){
         console.error("Erro: ", err);
         return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({error: "Erro ao modificar foto!"})

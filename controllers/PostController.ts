@@ -42,14 +42,18 @@ export const listarPosts = async (req: Request, res: Response) => {
 
 export const listarPostsPorUser = async (req: Request, res: Response) => {
     try {
-        const {userId} = req.params;
-        if(!userId) {
+        const {authorId} = req.params;
+        const userId = authorId;
+        const userExiste = await db.users.findUnique(
+            {where: {id: Number(userId)}}
+        )
+        if(!userExiste || Number(userId) == 0) {
             return res.status(HttpCodes.NOT_FOUND).json({error: "Usuário(a) não encontrado(a)!"});
         }
         const postsdoUser = await db.posts.findMany({
-            where: {user_id: Number(userId)}, include: {
+            where: {user_id: userExiste.id}, include: {
             users: {
-            select: { id: true, nickname: true, email: true }
+            select: { id: true, nickname: true}
             }
         },
         orderBy: {
@@ -83,7 +87,7 @@ export const atualizarPost = async (req: Request, res: Response) => {
                 title, content, updatedAt: new Date()
             }
         });
-        return res.status(HttpCodes.OK).json({message: "Post atualizado com sucesso!", post: postAtualizado})
+        return res.status(HttpCodes.OK).json(postAtualizado)
     } catch (err: any) {
         console.error("Erro: ", err);
         return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({error: "Erro ao atualizar post!"});

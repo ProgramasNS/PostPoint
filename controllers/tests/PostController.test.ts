@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import {uniqueUser} from '../../objects/testModels'
 import {db} from '../../db/TestsDatabase'
 
-dotenv.config();
+dotenv.config({path: '.env.test'});
 
 let authToken: string;
 let fakeToken: string;
@@ -62,11 +62,11 @@ beforeAll(async () => {
             )
             //Função para edge cases correspondente a "criarPost" (caso o(a) usuário(a) não esteja autenticado(a))
             test(
-                'Deve retornar "FORBIDDEN" caso o(a) usuário(a) não seja autenticado(a)', async () => {
+                'Deve retornar "UNAUTHORIZED" caso o(a) usuário(a) não seja autenticado(a)', async () => {
                     let contentCopia = {title: 'Novo Post', content: 'Novo conteúdo'};
                     const res = await request(app).post('/api/post/new').send(contentCopia);
                     expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
-                    expect(res.body.error).toBe("Você não está autenticado(a)!");
+                    expect(res.body.error).toBe("Token não fornecido!");
                 }
             )
             //Função para edge cases correspondente a "criarPost" (caso o post tenha menos de 10 caracteres)
@@ -79,8 +79,7 @@ beforeAll(async () => {
             )
         }
     )
-  }
-)
+
 //Função correspondente a "listarPosts"
 describe(
     'GET /', () => {
@@ -146,7 +145,7 @@ describe(
         )
         //Função para edge cases correspondente a "atualizarPost" (caso o(a) usuário(a) não tenha criado o post)
         test(
-            'Deve retornar "UNAUTHORIZED" caso o(a) usuário(a) não seja o(a) criador(a) do post', async () => {
+            'Deve retornar "FORBIDDEN" caso o(a) usuário(a) não seja o(a) criador(a) do post', async () => {
                 const postId = newPost.id;
                 const res = await request(app).put(`/api/post/${postId}`).send({content: 'Novo conteúdo'}).set('Authorization', `Bearer ${fakeToken}`);
                 expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
@@ -159,6 +158,15 @@ describe(
 //Função correspondente a "excluirPost"
 describe(
     'DELETE /:postId', () => {
+        // Mudamos este teste para rodar antes de apagar o post de fato
+        test(
+            'Verifica se o(a) usuário(a) é autor(a) do post', async () => {
+                const postId = newPost.id;
+                const res = await request(app).delete(`/api/post/${postId}`).set('Authorization', `Bearer ${fakeToken}`);
+                expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
+                expect(res.body.error).toBe('Somente o(a) criador(a) do post pode excluí-lo!');
+            }
+        );
         test(
             'Apagando um post', async () => {
                 const postId = newPost.id;
@@ -175,14 +183,7 @@ describe(
                 expect(res.body.error).toBe("Post não encontrado!");
             }
         )
-        //Função para edge cases correspondente a "excluirPost" (caso o(a) usuário(a) não seja autor(a) do post)
-        test(
-            'Verifica se o(a) usuário(a) é autor(a) do post', async () => {
-                const postId = newPost.id;
-                const res = await request(app).delete(`/api/post/${postId}`).set('Authorization', `Bearer ${fakeToken}`);
-                expect(res.statusCode).toBe(HttpCodes.FORBIDDEN);
-                expect(res.body.error).toBe('Somente o(a) criador(a) do post pode excluí-lo!');
-            }
-        );
     }
 );
+
+});

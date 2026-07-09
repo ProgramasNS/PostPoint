@@ -1,6 +1,10 @@
 import {NextFunction, Request, Response} from 'express'
 import jwt, { decode, JwtPayload } from 'jsonwebtoken'
 import HttpCodes from '../objects/Http';
+import dotenv from 'dotenv'
+
+dotenv.config();
+
 const verificarToken = async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];

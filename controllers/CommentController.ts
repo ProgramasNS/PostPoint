@@ -54,16 +54,16 @@ export const listarComentarios = async (req: Request, res: Response) => {
 
 export const listarComentariosPorUsuario = async (req: Request, res: Response) => {
     try {
-        const {authorId} = req.params;
+        const {userId} = req.params;
         const author = await db.users.findUnique({
-            where: {id: Number(authorId)}
+            where: {id: Number(userId)}
         })
         if (!author) {
             return res.status(HttpCodes.NOT_FOUND).json({error: "Usuário(a) não encontrado(a)!"})
         }
         const comentAutor = await db.comments.findMany(
             {
-                where: {user_id: Number(authorId)}
+                where: {user_id: Number(userId)}
             }
         );
         return res.status(HttpCodes.OK).json(comentAutor);
@@ -124,11 +124,17 @@ export const excluirComentario = async (req: Request, res: Response) => {
         const comentarioExiste = await db.comments.findUnique({
             where: {id: Number(commentId)}
         });
+        const postExiste = await db.posts.findUnique({
+            where: {id: Number(postId)}
+        })
+        if (!postExiste) {
+            return res.status(HttpCodes.NOT_FOUND).json({error: "Post não encontrado!"})
+        }
         if (!comentarioExiste) {
             return res.status(HttpCodes.NOT_FOUND).json({error: "Comentário não encontrado!"});
         }
-        if (userId !== comentarioExiste.user_id) {
-            return res.status(HttpCodes.NOT_FOUND).json({error: "Somente o(a) criador(a) pode excluir os comentários!"})
+        if (Number(userId) !== comentarioExiste.user_id) {
+            return res.status(HttpCodes.UNAUTHORIZED).json({error: "Somente o(a) criador(a) pode excluir os comentários!"})
         }
         await db.comments.delete({
         where: {id: Number(commentId)}});

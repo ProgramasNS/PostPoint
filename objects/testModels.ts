@@ -38,7 +38,7 @@ export class uniqueUser  {
 
     private generateToken(userId: number){
         const payload = { 
-            userId: userId,
+            id: userId,
             nickname: "Usuário de teste"
         };
         const token = jwt.sign(

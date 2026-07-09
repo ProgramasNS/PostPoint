@@ -1,11 +1,13 @@
+
 import { afterAll, beforeAll, describe, expect, test } from "@jest/globals";
-import bcrypt from 'bcrypt';
 import request from 'supertest';
 import app from "../../app";
 import HttpCodes from "../../objects/Http";
 import { PrismaClient, users } from '../../generated/prisma';
-import jwt from 'jsonwebtoken';
 import { uniqueUser } from "../../objects/testModels";
+import dotenv from "dotenv";
+
+dotenv.config({path: ".env.test"});
 
 const client = new PrismaClient();
 
@@ -32,7 +34,7 @@ describe('Testes para users', () => {
     describe(
         'POST /api/user/new', () => {
             //Função correspondente a "cadastrarUsuario"
-            test.only(
+            test(
                 'Cadastrar novo(a) usuário(a)', async () => {
                     const user = {nickname: 'User inexistente', email: 'email@inexistente.com', password: "Senha super segura"};
                     const res = await request(app).post('/api/user/new').send(user);
@@ -92,6 +94,8 @@ describe('Testes para users', () => {
                 'Fazendo login de novo usuário', async () => {
                     const content = {nickname: newUser.nickname, password: newUser.noHashPass}
                     const res = await request(app).post('/api/user/login').send(content);
+                    console.log("=== COLOQUEI DOTENV E DEU ISSO SEU CONTROLADOR ===");
+                    console.log("STATUS:", res.statusCode, "CORPO:", res.body);
                     expect(res.statusCode).toBe(HttpCodes.OK);
                 }
             )
@@ -147,6 +151,7 @@ describe('Testes para users', () => {
             test(
                 'Atualizando a foto de perfil', async () => {
                     const res = await request(app).put('/api/user/photo').set('Authorization', `Bearer ${authToken}`).send({url: 'https://media.istockphoto.com/id/1980276924/vector/no-photo-thumbnail-graphic-element-no-found-or-available-image-in-the-gallery-or-album-flat.jpg'});
+                    expect(res.body.url).toBeDefined();
                     expect(res.statusCode).toBe(HttpCodes.OK);
                 }
             )
@@ -162,8 +167,8 @@ describe('Testes para users', () => {
             test(
                 'Verificando autenticação', async () => {
                     const res = await request(app).put('/api/user/photo').send({url: 'https://media.istockphoto.com/id/1980276924/vector/no-photo-thumbnail-graphic-element-no-found-or-available-image-in-the-gallery-or-album-flat.jpg'});
+                    expect(res.body.error).toBe("Token não fornecido!");
                     expect(res.statusCode).toBe(HttpCodes.UNAUTHORIZED);
-                    expect(res.body.error).toBe("É necessário estar autenticado(a) para atualizar a foto de perfil!");
                 }
             )
             //Função edge cases correspondente a "atualizarFoto" (caso a imagem seja inválida)
