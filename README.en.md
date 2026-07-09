@@ -85,7 +85,7 @@
 <h2>Automated Tests</h2>
 <p>This application uses the Jest module. It features specific unit tests for each controller function. The controller tests do not only test the controllers themselves, but also the routes and requests. The tests are stored inside the tests folder, which is a subfolder of the controllers folder.</p>
 <h3>Edge Cases</h3>
-<p>As previously mentioned, the application works based on Fault-Tolerant Design, and this includes the so-called "edge cases", under which there is control over all possible request errors: edge case tests intentionally induce functions to fail to check if such errors generate the correct responses. Numerous tests are performed for the same function to cover as many errors as possible. Each test is clearly documented through comments and concise descriptions.</p>
+<p>As previously mentioned, the application works based on Defensive Design, and this includes the so-called "edge cases", under which there is control over all possible request errors: edge case tests intentionally induce functions to fail to check if such errors generate the correct responses. Numerous tests are performed for the same function to cover as many errors as possible. Each test is clearly documented through comments and concise descriptions.</p>
 <h2>How to Run</h2>
 <p>Specific steps are required to run the application:</p>
 <ol>
