@@ -13,7 +13,7 @@
     <li><strong>Json Web Token (JWT):</strong> The main tool responsible for generating tokens for user authentication. It works via a secret key, which generates a token after user login.</li>
 </ul>
 <h2>Code Standardization</h2>
-<p>The code for this project was based on the principles of <strong>Fault-Tolerant Design</strong>: each request of each API anticipates several possible failures, such as the omission of mandatory data in the request and the insertion of invalid data. In addition, the code is designed to be easy to read and understand, with comments clarifying several important points about the code.</p>
+<p>The code for this project was based on the principles of <strong>Defensive Programming</strong>: each request of each API anticipates several possible failures, such as the omission of mandatory data in the request and the insertion of invalid data. In addition, the code is designed to be easy to read and understand, with comments clarifying several important points about the code.</p>
 <p>Furthermore, the code is made to be practical and straightforward: The HttpCodes object, for example, replaces magic numbers when defining the <i>status code</i> of each response. The code is also entirely composed of arrow functions, which facilitate export and code readability.</p>
 <h2>The Models</h2>
 <p>The application models are defined by Prisma through the <code>schema.prisma</code> file. The schema has three models, with each corresponding to a database table. They are:</p>
