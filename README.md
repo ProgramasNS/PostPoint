@@ -86,7 +86,7 @@
 <h2>Testes automatizados</h2>
 <p>Esta aplicação utiliza o módulo Jest. Ela possui testes unitários específicos para cada função do controller. Os testes dos controllers não os testam somente, mas também as routes e requisições. Os testes são guardados dentro da pasta tests, a qual é subpasta da pasta controllers.</p>
 <h3>Os edge cases</h3>
-<p>Conforme dito antes, a aplicação funciona baseada no Design Tolerante a Erros, e isso inclui os chamados "edge cases", sob os quais há um controle sobre todos os erros de requisição possíveis: os testes para edge cases induzem as funções propositalmente ao erro para verificar se os tais erros geram as requisições corretas. São feitos inúmeros testes para uma mesma função, de modo a cobrir o máximo de erros possíveis. Cada teste é documentado claramente por meio de comentários e descrições concisas.</p>
+<p>Conforme dito antes, a aplicação funciona baseada no Design Defensivo, e isso inclui os chamados "edge cases", sob os quais há um controle sobre todos os erros de requisição possíveis: os testes para edge cases induzem as funções propositalmente ao erro para verificar se os tais erros geram as requisições corretas. São feitos inúmeros testes para uma mesma função, de modo a cobrir o máximo de erros possíveis. Cada teste é documentado claramente por meio de comentários e descrições concisas.</p>
 <h2>Como executar</h2>
 <p>São necessários passos específicos para executar a aplicação:</p>
 <ol>
