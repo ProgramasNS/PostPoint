@@ -279,3 +279,10 @@
     <li>Vá para a seção "Actions" do seu repositório e verifique se a aplicação funciona.</li>
     <li>Concluído! Você agora poderá testar manualmente, uma vez que o funcionamento já está garantido pelo GitHub</li>
 </ol>
+<h2>Contribuindo para o projeto</h2>
+<ol>
+<li>Faça um fork no repositório</li>
+<li>Crie uma feature branch (`git checkout -b feature/amazing-feature`)</li>
+<li>Execute os testes localmente (`npm test`) — todos os 44 testes vão passar</li>
+<li>Faça uma Pull Request com uma descrição clara das mudanças</li>
+</ol>
