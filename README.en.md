@@ -1,3 +1,4 @@
+[![CI/CD](https://github.com/ProgramasNS/PostPoint/actions/workflows/ci.yml/badge.svg)](https://github.com/ProgramasNS/PostPoint/actions/workflows/ci.yml)
 <h1>PostPoint</h1>
 <h2>What is it?</h2>
 <p>It is a set of REST APIs for a blog developed mainly in the TypeScript programming language.</p>
