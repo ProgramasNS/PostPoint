@@ -1,5 +1,5 @@
 <h1>PostPoint</h1>
-<p>English version: <a href="./README.en.md"></a></p>
+<p>English version: <a href="./README.en.md">Click here</a></p>
 <h2>O que é?</h2>
 <p>Trata-se de um conjunto de APIs REST para um blog desenvolvido principalmente na linguagem de programação TypeScript.</p>
 <h2>Tecnologias utilizadas</h2>
