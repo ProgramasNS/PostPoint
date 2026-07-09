@@ -1,7 +1,7 @@
 [![CI/CD](https://github.com/ProgramasNS/PostPoint/actions/workflows/ci.yml/badge.svg)](https://github.com/ProgramasNS/PostPoint/actions/workflows/ci.yml)
 <h1>PostPoint</h1>
-<h2>What is it?</h2>
-<p>It is a set of REST APIs for a blog developed mainly in the TypeScript programming language.</p>
+<h2>What is PostPoint?</h2>
+<p>A set of REST APIs for a blog developed mainly in the TypeScript programming language.</p>
 <h2>Technologies used</h2>
 <ul>
     <li><strong>Express.js:</strong> Main technology, used for creating APIs and handling requests. It is one of the most modern and robust frameworks for building back-end applications;</li>
@@ -277,4 +277,11 @@
     <li>Define, within the environment, the variables "DATABASE_URL" and "JWT_SECRET" with the same values as your .env file</li>
     <li>Go to the "Actions" section of your repository and check if the application works.</li>
     <li>Done! You can now test manually, since the operation is already guaranteed by GitHub</li>
+</ol>
+<h2>Contributing</h2>
+<ol>
+<li>Fork the repository</li>
+<li>Create a feature branch (`git checkout -b feature/amazing-feature`)</li>
+<li>Run tests locally (`npm test`) — all 44 must pass</li>
+<li>Open a Pull Request with a clear description of changes</li>
 </ol>
