@@ -1,3 +1,4 @@
+[![CI/CD](https://github.com/ProgramasNS/PostPoint/actions/workflows/ci.yml/badge.svg)](https://github.com/ProgramasNS/PostPoint/actions/workflows/ci.yml)
 <h1>PostPoint</h1>
 <p>English version: <a href="./README.en.md">Click here</a></p>
 <h2>O que é?</h2>
