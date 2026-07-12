@@ -99,7 +99,7 @@
         <code>cd PostPoint</code>
     </pre>
     <li><h3>Create a .env File</h3></li>
-    <p>The application works through environment variables. It has two variables: <pre><code>DATABASE_URL</code></pre> and <pre><code>JWT_SECRET</code></pre>. You must first define DATABASE_URL, which is essential for the entire functioning of the APIs.</p>
+    <p>The application works through environment variables. It has two variables: <pre><code>DATABASE_URL</code></pre>, <pre><code>JWT_SECRET</code></pre> and <pre><code>DATABASE_TEST_URL</code></pre> (the last must be created on a separate file named ".env.test"). You must first define DATABASE_URL, which is essential for the entire functioning of the APIs, and DATABASE_TEST_URL, if you want to run the automated tests.</p>
     <p>First of all, create a PostgreSQL database using DBeaver or through an online server, such as <a href="https://supabase.com">Supabase</a> and <a href="neon.com">Neon</a></p>
     <p>Second, copy the Database Connection String, which will be something like: </p>
     <pre>
