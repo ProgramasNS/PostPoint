@@ -11,6 +11,7 @@ app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use('/', defaultRoute)
 app.use('/api/user', userRouter);
 app.use('/api/post', postRoute);
 app.use('/api/post/comment', commentRoute);
