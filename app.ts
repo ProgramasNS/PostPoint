@@ -4,6 +4,7 @@ import userRouter from './routes/UserRoutes'
 import postRoute from './routes/PostRoutes'
 import commentRoute from './routes/CommentRoutes';
 import bodyParser from 'body-parser'
+import defaultRoute from './routes/DefaultRoutes'
 
 const app = express();
 app.use(express.json());

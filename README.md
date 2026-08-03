@@ -68,6 +68,7 @@
 <h3>Routes</h3>
 <p>Corresponde à pasta dedicada às routes, as quais mapeiam as funções, os métodos e define quais funções necessitam de autenticação. Possui os arquivos: </p>
 <ol>
+    <li><strong>DefaultRoutes.ts:</strong> Define a route na raiz do servidor, que invoca um método GET com a apresentação da aplicação;</li>
     <li><strong>UserRoutes.ts:</strong> Define as routes e invoca os métodos do UserController;</li>
     <li><strong>PostRoutes.ts:</strong> Define as routes e invoca os métodos do PostController;</li>
     <li><strong>CommentRoutes.ts:</strong> Define as routes e invoca os métodos do CommentController.</li>

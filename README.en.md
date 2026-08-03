@@ -67,6 +67,7 @@
 <h3>Routes</h3>
 <p>Corresponds to the folder dedicated to routes, which map functions, methods, and define which functions require authentication. It contains the files: </p>
 <ol>
+    <li><strong>DefaultRoutes.ts:</strong> Define the route on the root path, with the default message "Bem-vindo(a) ao PostPoint" (Welcome to PostPoint);</li>
     <li><strong>UserRoutes.ts:</strong> Defines routes and invokes UserController methods;</li>
     <li><strong>PostRoutes.ts:</strong> Defines routes and invokes PostController methods;</li>
     <li><strong>CommentRoutes.ts:</strong> Defines routes and invokes CommentController methods.</li>
